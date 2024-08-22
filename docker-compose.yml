@@ -1,0 +1,43 @@
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  mongodb:
+    image: bitnami/mongodb:latest
+    networks:
+      - app-tier
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGODB_ROOT_USER=docker
+      - MONGODB_ROOT_PASSWORD=docker
+      - MONGODB_DATABASE=text_me_later
+      - MONGODB_PORT_NUMBER=27017
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - mongo_data:/bitnami/mongo
+
+  mongodbtest:
+    image: bitnami/mongodb:latest
+    networks:
+      - app-tier
+    ports:
+      - '27020:27020'
+    environment:
+      - MONGODB_ROOT_USER=test
+      - MONGODB_ROOT_PASSWORD=test
+      - MONGODB_DATABASE=text_me_later_test
+      - MONGODB_PORT_NUMBER=27020
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+volumes:
+  mongo_data:
