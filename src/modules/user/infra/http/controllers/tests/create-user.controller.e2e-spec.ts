@@ -21,9 +21,12 @@ describe('Create User (e2e)', () => {
   })
 
   test('[POST] /users', async () => {
+    const uniqueValue = Date.now()
+    const username = `johndoe-${uniqueValue}`
+
     const response = await request(app.getHttpServer()).post('/users').send({
       name: 'johndoe',
-      username: 'johndoe',
+      username,
       email: 'johndoe@gmail.com',
       phoneNumber: '123456789',
       birthDate: '1990-01-01',
@@ -35,12 +38,12 @@ describe('Create User (e2e)', () => {
 
     expect(response.statusCode).toBe(201)
 
-    const user = await usersRepository.findByUsername('johndoe')
+    const user = await usersRepository.findByUsername(username)
 
     expect(user).toBeTruthy()
     expect(user).toEqual(
       expect.objectContaining({
-        username: 'johndoe',
+        username,
       }),
     )
   })

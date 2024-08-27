@@ -23,7 +23,7 @@ export class FindUserByUsernameController {
   async handle(@Body(bodyValidationPipe) body: FindUserByUsernameBodySchema) {
     const { username } = body
 
-    const user = await this.usersService.findByUsername(username)
+    const { user } = await this.usersService.findByUsername(username)
 
     return { user: UserPresenter.toHTTP(user) }
   }

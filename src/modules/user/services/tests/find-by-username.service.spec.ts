@@ -1,36 +1,48 @@
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { UsersService } from '../users.service'
 import { makeUser } from 'test/factories/make-user'
+import { NotFoundException } from '@nestjs/common'
+import { FakeHasher } from 'test/cryptography/fake-hasher'
+import { FakeEncrypter } from 'test/cryptography/fake-encrypter'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
+let fakeEncrypter: FakeEncrypter
+let fakeHasher: FakeHasher
 let sut: UsersService
 
 describe('Find User Service', () => {
   beforeEach(() => {
     inMemoryUsersRepository = new InMemoryUsersRepository()
+    fakeEncrypter = new FakeEncrypter()
+    fakeHasher = new FakeHasher()
 
-    sut = new UsersService(inMemoryUsersRepository)
+    sut = new UsersService(
+      inMemoryUsersRepository,
+      fakeHasher,
+      fakeHasher,
+      fakeEncrypter,
+    )
   })
 
   it('should be able to find a existing user by your username', async () => {
     const user = makeUser({ username: 'johndoe' })
     await inMemoryUsersRepository.create(user)
 
-    const userFounded = await sut.findByUsername(user.username)
+    const result = await sut.findByUsername(user.username)
 
-    if (!userFounded) {
+    if (!result.user) {
       throw new Error('User not found')
     }
 
     const usersOnDatabase = inMemoryUsersRepository.items
 
     expect(usersOnDatabase).toHaveLength(1)
-    expect(userFounded.username).toEqual('johndoe')
+    expect(result.user.username).toEqual('johndoe')
   })
 
   it('should be return null when user not exist', async () => {
-    const userFounded = await sut.findByUsername('johndoe')
-
-    expect(userFounded).toBeNull()
+    expect(async () => {
+      await sut.findByUsername('johndoe')
+    }).rejects.toBeInstanceOf(NotFoundException)
   })
 })

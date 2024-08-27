@@ -1,4 +1,4 @@
-import { CreateUserDto } from '@/modules/user/dtos/create-user-dto'
+import { CreateUserDto } from '@/modules/user/dtos/create-user.dto'
 import {
   AccountStatus,
   Pronoun,

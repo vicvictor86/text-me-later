@@ -22,17 +22,20 @@ describe('Find User By Username (e2e)', () => {
   })
 
   test('[POST] /users', async () => {
-    await userFactory.makeMongoUser({ username: 'johndoe' })
+    const uniqueValue = Date.now()
+    const username = `johndoe-${uniqueValue}`
+
+    await userFactory.makeMongoUser({ username })
 
     const response = await request(app.getHttpServer()).get('/users').send({
-      username: 'johndoe',
+      username,
     })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.user).toBeTruthy()
     expect(response.body.user).toEqual(
       expect.objectContaining({
-        username: 'johndoe',
+        username,
       }),
     )
   })

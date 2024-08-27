@@ -3,10 +3,16 @@ import { CreateUserController } from './infra/http/controllers/create-user.contr
 import { UsersService } from './services/users.service'
 import { DatabaseModule } from '@/shared/database/infra/database.module'
 import { FindUserByUsernameController } from './infra/http/controllers/find-user-by-username.controller'
+import { CryptographyModule } from '@/shared/cryptography/infra/cryptography.module'
+import { AuthenticateUserController } from './infra/http/controllers/authenticate-user.controller'
 
 @Module({
-  imports: [DatabaseModule],
-  controllers: [CreateUserController, FindUserByUsernameController],
+  imports: [DatabaseModule, CryptographyModule],
+  controllers: [
+    CreateUserController,
+    FindUserByUsernameController,
+    AuthenticateUserController,
+  ],
   providers: [UsersService],
   exports: [UsersService],
 })

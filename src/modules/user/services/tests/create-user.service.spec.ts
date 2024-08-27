@@ -2,15 +2,26 @@ import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repos
 import { UsersService } from '../users.service'
 import { makeUser } from 'test/factories/make-user'
 import { ConflictException } from '@nestjs/common'
+import { FakeHasher } from 'test/cryptography/fake-hasher'
+import { FakeEncrypter } from 'test/cryptography/fake-encrypter'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
+let fakeEncrypter: FakeEncrypter
+let fakeHasher: FakeHasher
 let sut: UsersService
 
 describe('Create User Service', () => {
   beforeEach(() => {
     inMemoryUsersRepository = new InMemoryUsersRepository()
+    fakeEncrypter = new FakeEncrypter()
+    fakeHasher = new FakeHasher()
 
-    sut = new UsersService(inMemoryUsersRepository)
+    sut = new UsersService(
+      inMemoryUsersRepository,
+      fakeHasher,
+      fakeHasher,
+      fakeEncrypter,
+    )
   })
 
   it('should be able to a create a user', async () => {
@@ -41,7 +52,6 @@ describe('Create User Service', () => {
         birthDate: user.birthDate,
         email: user.email,
         name: user.name,
-        password: user.password,
         phoneNumber: user.phoneNumber,
         pronoun: user.pronoun,
       }),

@@ -4,7 +4,7 @@
   "description": "",
   "author": "",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
@@ -18,8 +18,8 @@
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/vitest --runInBand",
-    "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "test:e2e:watch": "vitest --config ./vitest.config.e2e.ts"
+    "test:e2e": "vitest run --config ./vitest.config.e2e.mts",
+    "test:e2e:watch": "vitest --config ./vitest.config.e2e.mts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
