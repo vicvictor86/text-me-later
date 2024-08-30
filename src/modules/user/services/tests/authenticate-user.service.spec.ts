@@ -1,10 +1,12 @@
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { UsersService } from '../users.service'
 import { makeUser } from 'test/factories/make-user'
-import { NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { FakeEncrypter } from 'test/cryptography/fake-encrypter'
 import { FakeHasher } from 'test/cryptography/fake-hasher'
 import { AccountStatus } from '../../infra/mongoose/user'
+import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
+import { WrongCredentialsError } from '../errors/wrong-credentials-error'
+import { UserNotActiveError } from '../errors/user-not-active.error'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let fakeEncrypter: FakeEncrypter
@@ -47,7 +49,7 @@ describe('Authenticate User Service', () => {
         username: 'johndoe',
         password: '123456',
       })
-    }).rejects.toBeInstanceOf(NotFoundException)
+    }).rejects.toBeInstanceOf(ResourceNotFoundError)
   })
 
   it('should not be able to authenticate a client with wrong password', async () => {
@@ -63,7 +65,7 @@ describe('Authenticate User Service', () => {
         username: 'johndoe',
         password: 'wrong-password',
       })
-    }).rejects.toBeInstanceOf(UnauthorizedException)
+    }).rejects.toBeInstanceOf(WrongCredentialsError)
   })
 
   it('should not be able to authenticate a client that not confirmed the email', async () => {
@@ -79,6 +81,6 @@ describe('Authenticate User Service', () => {
         username: 'johndoe',
         password: 'password-hashed',
       })
-    }).rejects.toBeInstanceOf(UnauthorizedException)
+    }).rejects.toBeInstanceOf(UserNotActiveError)
   })
 })

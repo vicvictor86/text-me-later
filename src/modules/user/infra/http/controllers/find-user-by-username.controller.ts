@@ -4,14 +4,13 @@ import { ZodValidationPipe } from '@/shared/http/pipes/zod-validation-pipe'
 import { Body, Controller, Get, HttpCode, HttpStatus } from '@nestjs/common'
 import { z } from 'zod'
 import { UserPresenter } from '../presenters/user.presenter'
+import { FindUserByUsernameDto } from '@/modules/user/dtos/find-user-by-username.dto'
 
 const findUserByUsernameBodySchema = z.object({
   username: z.string(),
 })
 
 const bodyValidationPipe = new ZodValidationPipe(findUserByUsernameBodySchema)
-
-type FindUserByUsernameBodySchema = z.infer<typeof findUserByUsernameBodySchema>
 
 @Controller('/users')
 @Public()
@@ -20,7 +19,7 @@ export class FindUserByUsernameController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async handle(@Body(bodyValidationPipe) body: FindUserByUsernameBodySchema) {
+  async handle(@Body(bodyValidationPipe) body: FindUserByUsernameDto) {
     const { username } = body
 
     const { user } = await this.usersService.findByUsername(username)

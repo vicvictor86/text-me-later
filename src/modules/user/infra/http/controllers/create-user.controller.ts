@@ -4,6 +4,8 @@ import { ZodValidationPipe } from '@/shared/http/pipes/zod-validation-pipe'
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
 import { z } from 'zod'
 import { AccountStatus, Pronoun } from '../../mongoose/user'
+import { ApiTags } from '@nestjs/swagger'
+import { CreateUserDto } from '@/modules/user/dtos/create-user.dto'
 
 const createUserBodySchema = z.object({
   name: z.string(),
@@ -19,8 +21,7 @@ const createUserBodySchema = z.object({
 
 const bodyValidationPipe = new ZodValidationPipe(createUserBodySchema)
 
-type CreateUserBodySchema = z.infer<typeof createUserBodySchema>
-
+@ApiTags('user')
 @Controller('/users')
 @Public()
 export class CreateUserController {
@@ -28,7 +29,7 @@ export class CreateUserController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async handle(@Body(bodyValidationPipe) body: CreateUserBodySchema) {
+  async handle(@Body(bodyValidationPipe) body: CreateUserDto) {
     const {
       name,
       email,

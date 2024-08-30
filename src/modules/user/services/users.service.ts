@@ -1,16 +1,15 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateUserDto } from '../dtos/create-user.dto'
 import { UsersRepository } from '../repositories/users-repository'
 import { AccountStatus, User } from '../infra/mongoose/user'
 import { HashComparer } from '@/shared/cryptography/domain/hash-comparer'
 import { Encrypter } from '@/shared/cryptography/domain/encrypter'
-import { AuthenticateUserDto } from './dtos/authenticate-user.dto'
+import { AuthenticateUserDto } from '../dtos/authenticate-user.dto'
 import { HashGenerator } from '@/shared/cryptography/domain/hash-generator'
+import { UserAlreadyExistsError } from './errors/user-already-exists-error'
+import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
+import { UserNotActiveError } from './errors/user-not-active.error'
+import { WrongCredentialsError } from './errors/wrong-credentials-error'
 
 @Injectable()
 export class UsersService {
@@ -27,7 +26,15 @@ export class UsersService {
     )
 
     if (usernameAlreadyExists) {
-      throw new ConflictException('Username already exists')
+      throw new UserAlreadyExistsError('Username')
+    }
+
+    const emailAlreadyExists = await this.usersRepository.findByEmail(
+      createUser.email,
+    )
+
+    if (emailAlreadyExists) {
+      throw new UserAlreadyExistsError('Email')
     }
 
     createUser.password = await this.hashGenerator.hash(createUser.password)
@@ -39,7 +46,7 @@ export class UsersService {
     const user = await this.usersRepository.findByUsername(username)
 
     if (!user) {
-      throw new NotFoundException('User not found')
+      throw new ResourceNotFoundError('Usuário')
     }
 
     return { user }
@@ -49,7 +56,7 @@ export class UsersService {
     const user = await this.usersRepository.findById(id)
 
     if (!user) {
-      throw new NotFoundException('User not found')
+      throw new ResourceNotFoundError('Usuário')
     }
 
     user.accountStatus = AccountStatus.ACTIVE
@@ -64,11 +71,11 @@ export class UsersService {
     const user = await this.usersRepository.findByUsername(username)
 
     if (!user) {
-      throw new NotFoundException('User not found')
+      throw new ResourceNotFoundError('Usuário')
     }
 
     if (user.accountStatus !== AccountStatus.ACTIVE) {
-      throw new UnauthorizedException('User not active')
+      throw new UserNotActiveError()
     }
 
     const passwordMatch = await this.hashComparer.compare(
@@ -77,7 +84,7 @@ export class UsersService {
     )
 
     if (!passwordMatch) {
-      throw new UnauthorizedException('Invalid credentials')
+      throw new WrongCredentialsError()
     }
 
     const accessToken = await this.encrypter.encrypt({

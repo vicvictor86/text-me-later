@@ -1,3 +1,4 @@
+import { AuthenticateUserDto } from '@/modules/user/dtos/authenticate-user.dto'
 import { UsersService } from '@/modules/user/services/users.service'
 import { Public } from '@/shared/auth/infra/public'
 import { ZodValidationPipe } from '@/shared/http/pipes/zod-validation-pipe'
@@ -11,8 +12,6 @@ const authenticateUserBodySchema = z.object({
 
 const bodyValidationPipe = new ZodValidationPipe(authenticateUserBodySchema)
 
-type AuthenticateUserBodySchema = z.infer<typeof authenticateUserBodySchema>
-
 @Controller('/sessions')
 @Public()
 export class AuthenticateUserController {
@@ -20,7 +19,7 @@ export class AuthenticateUserController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  async handle(@Body(bodyValidationPipe) body: AuthenticateUserBodySchema) {
+  async handle(@Body(bodyValidationPipe) body: AuthenticateUserDto) {
     const { username, password } = body
 
     const { accessToken } = await this.usersService.authenticate({

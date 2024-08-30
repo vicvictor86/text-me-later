@@ -1,6 +1,6 @@
 import { AccountStatus, Pronoun } from '../infra/mongoose/user'
 
-export interface CreateUserDto {
+export class CreateUserDto {
   name: string
   username: string
   email: string

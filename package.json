@@ -29,6 +29,7 @@
     "@nestjs/mongoose": "^10.0.10",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.4.0",
     "@rocketseat/eslint-config": "^2.2.2",
     "bcryptjs": "^2.4.3",
     "mongoose": "^8.5.3",

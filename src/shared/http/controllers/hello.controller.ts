@@ -1,5 +1,5 @@
-import { Public } from '@/shared/auth/infra/public';
-import { Controller, Get } from '@nestjs/common';
+import { Public } from '@/shared/auth/infra/public'
+import { Controller, Get } from '@nestjs/common'
 
 @Controller('/')
 @Public()

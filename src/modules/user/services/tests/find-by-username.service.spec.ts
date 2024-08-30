@@ -1,9 +1,9 @@
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { UsersService } from '../users.service'
 import { makeUser } from 'test/factories/make-user'
-import { NotFoundException } from '@nestjs/common'
 import { FakeHasher } from 'test/cryptography/fake-hasher'
 import { FakeEncrypter } from 'test/cryptography/fake-encrypter'
+import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let fakeEncrypter: FakeEncrypter
@@ -43,6 +43,6 @@ describe('Find User Service', () => {
   it('should be return null when user not exist', async () => {
     expect(async () => {
       await sut.findByUsername('johndoe')
-    }).rejects.toBeInstanceOf(NotFoundException)
+    }).rejects.toBeInstanceOf(ResourceNotFoundError)
   })
 })

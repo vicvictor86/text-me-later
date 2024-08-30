@@ -1,9 +1,9 @@
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { UsersService } from '../users.service'
 import { makeUser } from 'test/factories/make-user'
-import { ConflictException } from '@nestjs/common'
 import { FakeHasher } from 'test/cryptography/fake-hasher'
 import { FakeEncrypter } from 'test/cryptography/fake-encrypter'
+import { UserAlreadyExistsError } from '../errors/user-already-exists-error'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let fakeEncrypter: FakeEncrypter
@@ -75,7 +75,31 @@ describe('Create User Service', () => {
         phoneNumber: user.phoneNumber,
         pronoun: user.pronoun,
       })
-    }).rejects.toBeInstanceOf(ConflictException)
+    }).rejects.toBeInstanceOf(UserAlreadyExistsError)
+
+    const usersOnDatabase = inMemoryUsersRepository.items
+
+    expect(usersOnDatabase).toHaveLength(1)
+  })
+
+  it('should not be able to create a user with same email', async () => {
+    const user = makeUser({ email: 'johndoe@johndoe.com' })
+    await inMemoryUsersRepository.create(user)
+
+    expect(async () => {
+      await sut.create({
+        username: user.username,
+        accountStatus: user.accountStatus,
+        avatar: user.avatar,
+        bios: user.bios,
+        birthDate: user.birthDate,
+        email: 'johndoe@johndoe.com',
+        name: user.name,
+        password: user.password,
+        phoneNumber: user.phoneNumber,
+        pronoun: user.pronoun,
+      })
+    }).rejects.toBeInstanceOf(UserAlreadyExistsError)
 
     const usersOnDatabase = inMemoryUsersRepository.items
 

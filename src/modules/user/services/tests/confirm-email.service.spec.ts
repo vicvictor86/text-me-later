@@ -1,10 +1,10 @@
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { UsersService } from '../users.service'
 import { makeUser } from 'test/factories/make-user'
-import { NotFoundException } from '@nestjs/common'
 import { AccountStatus } from '../../infra/mongoose/user'
 import { FakeHasher } from 'test/cryptography/fake-hasher'
 import { FakeEncrypter } from 'test/cryptography/fake-encrypter'
+import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let fakeEncrypter: FakeEncrypter
@@ -40,6 +40,6 @@ describe('Confirm Email User Service', () => {
   it('should not be able to confirm a email from a non existing user', async () => {
     expect(async () => {
       await sut.confirmEmail('non-existing-id')
-    }).rejects.toBeInstanceOf(NotFoundException)
+    }).rejects.toBeInstanceOf(ResourceNotFoundError)
   })
 })

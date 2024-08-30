@@ -20,7 +20,7 @@ export function makeUser(override: Partial<CreateUserDto> = {}, id?: string) {
     password: faker.internet.password(),
     birthDate: faker.date.past(),
     avatar: faker.image.avatar(),
-    accountStatus: AccountStatus.WAITING_FOR_EMAIL,
+    accountStatus: AccountStatus.ACTIVE,
     bios: faker.lorem.paragraph(),
     createdAt: new Date(),
     ...override,
