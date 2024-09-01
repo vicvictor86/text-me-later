@@ -1,6 +1,11 @@
 import { Socket } from 'socket.io-client'
 
-export function asyncWebsocketEmit<Request, Response = void>(
+export interface DefaultResponse {
+  status: 'success' | 'error'
+  message?: object
+}
+
+export function asyncWebsocketEmit<Request, Response = DefaultResponse>(
   socket: Socket,
   event: string,
   data: Request,

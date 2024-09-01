@@ -14,11 +14,8 @@ import { PrivateChatsService } from '../../services/private-chats.service'
 import { Injectable } from '@nestjs/common'
 import { CreatePrivateChatDto } from '../../dtos/create-private-chat.dto'
 import { PrivateChatPresenter } from './presenters/private-chat.presenter'
-
-interface SendMessageResponse {
-  status: 'success' | 'error'
-  error?: Error
-}
+import { DefaultResponse } from './utils/await-websocket-emit'
+import { EventSubscriptions } from './events-subscriptions'
 
 @WebSocketGateway()
 @Injectable()
@@ -31,6 +28,7 @@ export class ChatWebSocketGateway
   ) {}
 
   private clients: Set<Socket> = new Set()
+  public static subscriberMessages: string[] = []
 
   @WebSocketServer() server: Server
 
@@ -48,23 +46,23 @@ export class ChatWebSocketGateway
     this.clients.delete(client)
   }
 
-  @SubscribeMessage('createPrivateChat')
+  @SubscribeMessage(EventSubscriptions.CreatePrivateChat)
   async handleCreateChat(client: Socket, payload: CreatePrivateChatDto) {
     const privateChat = await this.privateChatsService.create(payload)
 
     return PrivateChatPresenter.toHTTP(privateChat, payload.whoRequestingId)
   }
 
-  @SubscribeMessage('sendMessage')
+  @SubscribeMessage(EventSubscriptions.SendMessage)
   async handleMessage(
     client: Socket,
     payload: CreateChatMessageDto,
-  ): Promise<SendMessageResponse> {
+  ): Promise<DefaultResponse> {
     try {
       await this.chatMessagesService.create(payload)
       return { status: 'success' }
     } catch (error) {
-      return { status: 'error', error }
+      return { status: 'error', message: error }
     }
   }
 }

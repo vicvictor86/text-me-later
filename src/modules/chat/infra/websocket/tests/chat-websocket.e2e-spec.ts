@@ -14,6 +14,7 @@ import { PrivateChatFactory } from 'test/factories/make-private-chat'
 import { CreateChatMessageDto } from '@/modules/chat/dtos/create-chat-message.dto'
 import { ChatType } from '../../mongoose/schemas/chat-message'
 import { ChatMessagesRepository } from '@/modules/chat/repositories/chat-messages-repository'
+import { EventSubscriptions } from '../events-subscriptions'
 
 describe('Chat Web Socket Test (e2e)', () => {
   let app: INestApplication
@@ -66,7 +67,7 @@ describe('Chat Web Socket Test (e2e)', () => {
 
     const privateChatResponse = await asyncWebsocketEmit<Request, Response>(
       socket,
-      'createPrivateChat',
+      EventSubscriptions.CreatePrivateChat,
       {
         whoRequestingId: user1Id,
         otherUserId: user2Id,
@@ -110,7 +111,7 @@ describe('Chat Web Socket Test (e2e)', () => {
 
     type Request = CreateChatMessageDto
 
-    await asyncWebsocketEmit<Request>(socket, 'sendMessage', {
+    await asyncWebsocketEmit<Request>(socket, EventSubscriptions.SendMessage, {
       chatId: privateChat._id.toString(),
       whoRequestingId: user1Id,
       senderId: user1Id,
