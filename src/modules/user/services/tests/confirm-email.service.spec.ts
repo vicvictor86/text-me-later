@@ -1,7 +1,7 @@
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { UsersService } from '../users.service'
 import { makeUser } from 'test/factories/make-user'
-import { AccountStatus } from '../../infra/mongoose/user'
+import { AccountStatus } from '../../infra/mongoose/schemas/user'
 import { FakeHasher } from 'test/cryptography/fake-hasher'
 import { FakeEncrypter } from 'test/cryptography/fake-encrypter'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'

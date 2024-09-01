@@ -1,5 +1,5 @@
 import { PaginationParams } from '@/shared/database/repositories/pagination-params'
-import { ChatType } from '../infra/mongoose/chat-message'
+import { ChatType } from '../infra/mongoose/schemas/chat-message'
 
 export class FetchMessagesByChatIdRepositoryDto {
   chatId: string

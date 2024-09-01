@@ -4,14 +4,15 @@ import { makeUser } from 'test/factories/make-user'
 import { makePrivateChat } from 'test/factories/make-private-chat'
 import { InMemoryChatMessagesRepository } from 'test/repositories/in-mermory-chat-messages-repository'
 import { ChatMessagesService } from '../chat-messages.service'
-import { ChatType } from '../../infra/mongoose/chat-message'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
+import { ChatType } from '../../infra/mongoose/schemas/chat-message'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository
-let sut: ChatMessagesService
+
+let chatMessagesService: ChatMessagesService
 
 describe('Create Chat Message Service', () => {
   beforeEach(() => {
@@ -19,7 +20,7 @@ describe('Create Chat Message Service', () => {
     inMemoryUsersRepository = new InMemoryUsersRepository()
     inMemoryPrivateChatsRepository = new InMemoryPrivateChatsRepository()
 
-    sut = new ChatMessagesService(
+    chatMessagesService = new ChatMessagesService(
       inMemoryChatMessagesRepository,
       inMemoryPrivateChatsRepository,
       inMemoryUsersRepository,
@@ -34,14 +35,14 @@ describe('Create Chat Message Service', () => {
     await inMemoryUsersRepository.create(user2)
 
     const privateChat = makePrivateChat({
-      user1Id: user1._id.toString(),
-      user2Id: user2._id.toString(),
+      user1Id: user1._id,
+      user2Id: user2._id,
       titleUser1: user2.username,
       titleUser2: user1.username,
     })
     await inMemoryPrivateChatsRepository.create(privateChat)
 
-    await sut.create({
+    await chatMessagesService.create({
       whoRequestingId: user1._id.toString(),
       chatId: privateChat._id.toString(),
       chatType: ChatType.PRIVATE,
@@ -54,8 +55,8 @@ describe('Create Chat Message Service', () => {
     expect(privateChatsOnDatabase).toHaveLength(1)
     expect(privateChatsOnDatabase[0]).toEqual(
       expect.objectContaining({
-        user1Id: user1._id.toString(),
-        user2Id: user2._id.toString(),
+        user1Id: user1._id,
+        user2Id: user2._id,
         titleUser1: user2.username,
         titleUser2: user1.username,
       }),
@@ -70,7 +71,7 @@ describe('Create Chat Message Service', () => {
     await inMemoryUsersRepository.create(user2)
 
     expect(async () => {
-      await sut.create({
+      await chatMessagesService.create({
         whoRequestingId: user1._id.toString(),
         chatId: 'non-existing-id',
         chatType: ChatType.PRIVATE,
@@ -90,13 +91,13 @@ describe('Create Chat Message Service', () => {
     await inMemoryUsersRepository.create(outerUser)
 
     const privateChat = makePrivateChat({
-      user1Id: user1._id.toString(),
-      user2Id: user2._id.toString(),
+      user1Id: user1._id,
+      user2Id: user2._id,
     })
     await inMemoryPrivateChatsRepository.create(privateChat)
 
     expect(async () => {
-      await sut.create({
+      await chatMessagesService.create({
         whoRequestingId: outerUser._id.toString(),
         chatId: privateChat._id.toString(),
         chatType: ChatType.PRIVATE,
@@ -114,13 +115,13 @@ describe('Create Chat Message Service', () => {
     await inMemoryUsersRepository.create(user2)
 
     const privateChat = makePrivateChat({
-      user1Id: user1._id.toString(),
-      user2Id: user2._id.toString(),
+      user1Id: user1._id,
+      user2Id: user2._id,
     })
     await inMemoryPrivateChatsRepository.create(privateChat)
 
     expect(async () => {
-      await sut.create({
+      await chatMessagesService.create({
         whoRequestingId: user1._id.toString(),
         chatId: privateChat._id.toString(),
         chatType: ChatType.PRIVATE,

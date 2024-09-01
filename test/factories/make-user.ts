@@ -3,7 +3,7 @@ import {
   AccountStatus,
   Pronoun,
   User,
-} from '@/modules/user/infra/mongoose/user'
+} from '@/modules/user/infra/mongoose/schemas/user'
 import { Types, Model } from 'mongoose'
 import { faker } from '@faker-js/faker'
 import { Injectable } from '@nestjs/common'

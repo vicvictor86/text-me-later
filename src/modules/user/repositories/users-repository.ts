@@ -1,5 +1,5 @@
 import { CreateUserDto } from '../dtos/create-user.dto'
-import { User } from '../infra/mongoose/user'
+import { User } from '../infra/mongoose/schemas/user'
 
 export abstract class UsersRepository {
   abstract create(user: CreateUserDto): Promise<void>

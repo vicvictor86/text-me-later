@@ -1,16 +1,15 @@
 import { Types } from 'mongoose'
 import { faker } from '@faker-js/faker'
-import { PrivateChat } from '@/modules/chat/infra/mongoose/private-chat'
-import { CreatePrivateChatRepositoryDto } from '@/modules/chat/dtos/create-private-chat.dto'
+import { PrivateChat } from '@/modules/chat/infra/mongoose/schemas/private-chat'
 
 export function makePrivateChat(
-  override: Partial<CreatePrivateChatRepositoryDto> = {},
+  override: Partial<PrivateChat> = {},
   id?: string,
 ) {
   const privateChat: PrivateChat = {
     _id: id ? new Types.ObjectId(id) : new Types.ObjectId(),
-    user1Id: new Types.ObjectId().toString(),
-    user2Id: new Types.ObjectId().toString(),
+    user1Id: new Types.ObjectId(),
+    user2Id: new Types.ObjectId(),
     titleUser1: faker.internet.userName(),
     titleUser2: faker.internet.userName(),
     createdAt: new Date(),

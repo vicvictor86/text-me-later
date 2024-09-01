@@ -1,22 +1,12 @@
-import { CreateChatMessageRepositoryDto } from '@/modules/chat/dtos/create-chat-message.dto'
 import { FetchMessagesByChatIdServiceDto } from '@/modules/chat/dtos/fetch-messages-by-chat-id-service.dto'
-import { ChatMessage } from '@/modules/chat/infra/mongoose/chat-message'
+import { ChatMessage } from '@/modules/chat/infra/mongoose/schemas/chat-message'
 import { ChatMessagesRepository } from '@/modules/chat/repositories/chat-messages-repository'
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
-import { Types } from 'mongoose'
 
 export class InMemoryChatMessagesRepository implements ChatMessagesRepository {
   public items: ChatMessage[] = []
 
-  async create(
-    createChatMessage: CreateChatMessageRepositoryDto,
-  ): Promise<void> {
-    const chatMessage: ChatMessage = {
-      _id: new Types.ObjectId(),
-      createdAt: new Date(),
-      ...createChatMessage,
-    }
-
+  async create(chatMessage: ChatMessage): Promise<void> {
     this.items.push(chatMessage)
   }
 
@@ -43,7 +33,7 @@ export class InMemoryChatMessagesRepository implements ChatMessagesRepository {
     const { pageIndex, perPage, search } = paginationParams
 
     const chatMessagesInChat = this.items.filter(
-      (item) => item.chatId === chatId,
+      (item) => item.chatId.toString() === chatId,
     )
 
     const allChatMessagesThatMatchWithSearch = chatMessagesInChat.filter(

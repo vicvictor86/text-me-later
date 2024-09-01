@@ -5,19 +5,32 @@ import { makePrivateChat } from 'test/factories/make-private-chat'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { makeUser } from 'test/factories/make-user'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
+import { InMemoryChatMessagesRepository } from 'test/repositories/in-mermory-chat-messages-repository'
+import { ChatMessagesService } from '../chat-messages.service'
 
+let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository
-let sut: PrivateChatsService
+
+let chatMessagesService: ChatMessagesService
+let privateChatsService: PrivateChatsService
 
 describe('Find Private Chat by Id Service', () => {
   beforeEach(() => {
+    inMemoryChatMessagesRepository = new InMemoryChatMessagesRepository()
     inMemoryUsersRepository = new InMemoryUsersRepository()
     inMemoryPrivateChatsRepository = new InMemoryPrivateChatsRepository()
 
-    sut = new PrivateChatsService(
+    chatMessagesService = new ChatMessagesService(
+      inMemoryChatMessagesRepository,
       inMemoryPrivateChatsRepository,
       inMemoryUsersRepository,
+    )
+
+    privateChatsService = new PrivateChatsService(
+      inMemoryPrivateChatsRepository,
+      inMemoryUsersRepository,
+      chatMessagesService,
     )
   })
 
@@ -25,10 +38,10 @@ describe('Find Private Chat by Id Service', () => {
     const user1 = makeUser()
     await inMemoryUsersRepository.create(user1)
 
-    const privateChat = makePrivateChat({ user1Id: user1._id.toString() })
+    const privateChat = makePrivateChat({ user1Id: user1._id })
     await inMemoryPrivateChatsRepository.create(privateChat)
 
-    const result = await sut.findById({
+    const result = await privateChatsService.findById({
       whoRequestingId: user1._id.toString(),
       chatId: privateChat._id.toString(),
     })
@@ -43,7 +56,7 @@ describe('Find Private Chat by Id Service', () => {
     const user1 = makeUser()
 
     expect(async () => {
-      await sut.findById({
+      await privateChatsService.findById({
         whoRequestingId: user1._id.toString(),
         chatId: 'non-existing-id',
       })
@@ -57,11 +70,11 @@ describe('Find Private Chat by Id Service', () => {
     await inMemoryUsersRepository.create(user1)
     await inMemoryUsersRepository.create(otherUser)
 
-    const privateChat = makePrivateChat({ user1Id: user1._id.toString() })
+    const privateChat = makePrivateChat({ user1Id: user1._id })
     await inMemoryPrivateChatsRepository.create(privateChat)
 
     expect(async () => {
-      await sut.findById({
+      await privateChatsService.findById({
         whoRequestingId: otherUser._id.toString(),
         chatId: privateChat._id.toString(),
       })

@@ -1,14 +1,9 @@
-import { ChatType } from '../infra/mongoose/chat-message'
+import { ChatType } from '../infra/mongoose/schemas/chat-message'
 
-export class CreateChatMessageRepositoryDto {
-  chatId: string
-  chatName?: string
-  chatDescription?: string
+export class CreateChatMessageDto {
+  whoRequestingId: string
   senderId: string
+  chatId: string
   text: string
   chatType: ChatType
-}
-
-export class CreateChatMessageServiceDto extends CreateChatMessageRepositoryDto {
-  whoRequestingId: string
 }

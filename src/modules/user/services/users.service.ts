@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { CreateUserDto } from '../dtos/create-user.dto'
 import { UsersRepository } from '../repositories/users-repository'
-import { AccountStatus, User } from '../infra/mongoose/user'
+import { AccountStatus, User } from '../infra/mongoose/schemas/user'
 import { HashComparer } from '@/shared/cryptography/domain/hash-comparer'
 import { Encrypter } from '@/shared/cryptography/domain/encrypter'
 import { AuthenticateUserDto } from '../dtos/authenticate-user.dto'

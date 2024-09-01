@@ -1,3 +1,4 @@
+import { Optional } from '@/shared/database/repositories/optional'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose, { Types, HydratedDocument } from 'mongoose'
 
@@ -8,19 +9,22 @@ export enum ChatType {
 
 @Schema({ timestamps: true })
 export class ChatMessage {
+  constructor(chatMessage: Optional<ChatMessage, '_id' | 'createdAt'>) {
+    this._id = chatMessage._id ?? new Types.ObjectId()
+    this.chatId = chatMessage.chatId
+    this.senderId = chatMessage.senderId
+    this.text = chatMessage.text
+    this.chatType = chatMessage.chatType
+    this.createdAt = chatMessage.createdAt ?? new Date()
+  }
+
   _id: Types.ObjectId
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
-  chatId: string
-
-  @Prop()
-  chatName?: string
-
-  @Prop()
-  chatDescription?: string
+  chatId: Types.ObjectId
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  senderId: string
+  senderId: Types.ObjectId
 
   @Prop()
   text: string

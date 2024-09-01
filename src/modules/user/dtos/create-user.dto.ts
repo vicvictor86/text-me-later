@@ -1,4 +1,4 @@
-import { AccountStatus, Pronoun } from '../infra/mongoose/user'
+import { AccountStatus, Pronoun } from '../infra/mongoose/schemas/user'
 
 export class CreateUserDto {
   name: string

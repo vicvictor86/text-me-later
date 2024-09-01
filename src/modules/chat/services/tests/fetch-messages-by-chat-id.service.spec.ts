@@ -5,14 +5,15 @@ import { ChatMessagesService } from '../chat-messages.service'
 import { InMemoryChatMessagesRepository } from 'test/repositories/in-mermory-chat-messages-repository'
 import { makeUser } from 'test/factories/make-user'
 import { makeChatMessage } from 'test/factories/make-chat-message'
-import { ChatType } from '../../infra/mongoose/chat-message'
+import { ChatType } from '../../infra/mongoose/schemas/chat-message'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
 
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository
-let sut: ChatMessagesService
+
+let chatMessagesService: ChatMessagesService
 
 describe('Fetch Messages By Chat Id Service', () => {
   beforeEach(() => {
@@ -20,7 +21,7 @@ describe('Fetch Messages By Chat Id Service', () => {
     inMemoryUsersRepository = new InMemoryUsersRepository()
     inMemoryPrivateChatsRepository = new InMemoryPrivateChatsRepository()
 
-    sut = new ChatMessagesService(
+    chatMessagesService = new ChatMessagesService(
       inMemoryChatMessagesRepository,
       inMemoryPrivateChatsRepository,
       inMemoryUsersRepository,
@@ -35,8 +36,8 @@ describe('Fetch Messages By Chat Id Service', () => {
     await inMemoryUsersRepository.create(user2)
 
     const privateChat = makePrivateChat({
-      user1Id: user1._id.toString(),
-      user2Id: user2._id.toString(),
+      user1Id: user1._id,
+      user2Id: user2._id,
       titleUser1: user2.username,
       titleUser2: user1.username,
     })
@@ -44,15 +45,15 @@ describe('Fetch Messages By Chat Id Service', () => {
 
     for (let i = 0; i < 22; i++) {
       const chatMessage = makeChatMessage({
-        chatId: privateChat._id.toString(),
-        senderId: user1._id.toString(),
+        chatId: privateChat._id,
+        senderId: user1._id,
         text: `Hello ${i}`,
       })
 
       await inMemoryChatMessagesRepository.create(chatMessage)
     }
 
-    const result = await sut.fetchByChatId({
+    const result = await chatMessagesService.fetchByChatId({
       whoRequestingId: user1._id.toString(),
       chatType: ChatType.PRIVATE,
       chatId: privateChat._id.toString(),
@@ -74,7 +75,7 @@ describe('Fetch Messages By Chat Id Service', () => {
     await inMemoryUsersRepository.create(user2)
 
     expect(async () => {
-      await sut.fetchByChatId({
+      await chatMessagesService.fetchByChatId({
         whoRequestingId: user1._id.toString(),
         chatType: ChatType.PRIVATE,
         chatId: 'non-existing-id',
@@ -96,8 +97,8 @@ describe('Fetch Messages By Chat Id Service', () => {
     await inMemoryUsersRepository.create(otherUser)
 
     const privateChat = makePrivateChat({
-      user1Id: user1._id.toString(),
-      user2Id: user2._id.toString(),
+      user1Id: user1._id,
+      user2Id: user2._id,
       titleUser1: user2.username,
       titleUser2: user1.username,
     })
@@ -105,8 +106,8 @@ describe('Fetch Messages By Chat Id Service', () => {
 
     for (let i = 0; i < 22; i++) {
       const chatMessage = makeChatMessage({
-        chatId: privateChat._id.toString(),
-        senderId: user1._id.toString(),
+        chatId: privateChat._id,
+        senderId: user1._id,
         text: `Hello ${i}`,
       })
 
@@ -114,7 +115,7 @@ describe('Fetch Messages By Chat Id Service', () => {
     }
 
     expect(async () => {
-      await sut.fetchByChatId({
+      await chatMessagesService.fetchByChatId({
         whoRequestingId: otherUser._id.toString(),
         chatType: ChatType.PRIVATE,
         chatId: privateChat._id.toString(),

@@ -1,5 +1,6 @@
-import { CreatePrivateChatRepositoryDto } from '../dtos/create-private-chat.dto'
-import { PrivateChat } from '../infra/mongoose/private-chat'
+import { PaginationResult } from '@/shared/database/repositories/pagination-params'
+import { PrivateChat } from '../infra/mongoose/schemas/private-chat'
+import { FetchPrivateChatsByUserIdRepositoryDto } from '../dtos/fetch-private-chats-by-user-id-service.dto'
 
 export interface FindByUsersIdProps {
   user1Id: string
@@ -7,9 +8,7 @@ export interface FindByUsersIdProps {
 }
 
 export abstract class PrivateChatsRepository {
-  abstract create(
-    privateChat: CreatePrivateChatRepositoryDto,
-  ): Promise<PrivateChat>
+  abstract create(privateChat: PrivateChat): Promise<PrivateChat>
 
   abstract save(privateChat: PrivateChat): Promise<void>
 
@@ -18,5 +17,7 @@ export abstract class PrivateChatsRepository {
     usersId: FindByUsersIdProps,
   ): Promise<PrivateChat | null>
 
-  abstract fetchByUserId(userId: string): Promise<PrivateChat[]>
+  abstract fetchByUserId(
+    params: FetchPrivateChatsByUserIdRepositoryDto,
+  ): Promise<PaginationResult<PrivateChat>>
 }

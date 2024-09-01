@@ -1,7 +1,7 @@
 import { MessageHelper } from '@/shared/errors/message-helper'
-import { UnauthorizedException } from '@nestjs/common'
+import { ConflictException } from '@nestjs/common'
 
-export class ChatAlreadyExistsError extends UnauthorizedException {
+export class ChatAlreadyExistsError extends ConflictException {
   constructor() {
     super(MessageHelper.CHAT_ALREADY_EXISTS_ERROR)
   }

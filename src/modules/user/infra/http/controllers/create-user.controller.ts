@@ -3,7 +3,7 @@ import { Public } from '@/shared/auth/infra/public'
 import { ZodValidationPipe } from '@/shared/http/pipes/zod-validation-pipe'
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
 import { z } from 'zod'
-import { AccountStatus, Pronoun } from '../../mongoose/user'
+import { AccountStatus, Pronoun } from '../../mongoose/schemas/user'
 import { ApiTags } from '@nestjs/swagger'
 import { CreateUserDto } from '@/modules/user/dtos/create-user.dto'
 

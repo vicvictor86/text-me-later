@@ -4,8 +4,8 @@ import request from 'supertest'
 import { AppModule } from '@/app.module'
 import { DatabaseModule } from '@/shared/database/infra/database.module'
 import { UserFactory } from 'test/factories/make-user'
-import { MongoUsersRepository } from '../../../repositories/mongo-users-repository'
-import { AccountStatus } from '../../../mongoose/user'
+import { MongoUsersRepository } from '../../../mongoose/repositories/mongo-users-repository'
+import { AccountStatus } from '../../../mongoose/schemas/user'
 
 describe('Authenticate User (e2e)', () => {
   let app: INestApplication

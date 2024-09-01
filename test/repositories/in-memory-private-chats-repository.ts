@@ -1,34 +1,24 @@
-import { CreatePrivateChatRepositoryDto } from '@/modules/chat/dtos/create-private-chat.dto'
-import { PrivateChat } from '@/modules/chat/infra/mongoose/private-chat'
+import { FetchPrivateChatsByUserIdRepositoryDto } from '@/modules/chat/dtos/fetch-private-chats-by-user-id-service.dto'
+import { PrivateChat } from '@/modules/chat/infra/mongoose/schemas/private-chat'
 import {
   FindByUsersIdProps,
   PrivateChatsRepository,
 } from '@/modules/chat/repositories/private-chats-repository'
-import { Types } from 'mongoose'
+import { PaginationResult } from '@/shared/database/repositories/pagination-params'
 
 export class InMemoryPrivateChatsRepository implements PrivateChatsRepository {
   public items: PrivateChat[] = []
 
-  async create(
-    createPrivateChat: CreatePrivateChatRepositoryDto,
-  ): Promise<PrivateChat> {
-    const privateChat: PrivateChat = {
-      _id: new Types.ObjectId(),
-      createdAt: new Date(),
-      ...createPrivateChat,
-    }
-
+  async create(privateChat: PrivateChat): Promise<PrivateChat> {
     this.items.push(privateChat)
 
     return privateChat
   }
 
   async findById(id: string): Promise<PrivateChat | null> {
-    const PrivateChat = this.items.find(
-      (PrivateChat) => PrivateChat._id.toString() === id,
-    )
+    const privateChat = this.items.find((item) => item._id.toString() === id)
 
-    return PrivateChat || null
+    return privateChat || null
   }
 
   async save(privateChat: PrivateChat): Promise<void> {
@@ -39,10 +29,45 @@ export class InMemoryPrivateChatsRepository implements PrivateChatsRepository {
     this.items[index] = privateChat
   }
 
-  async fetchByUserId(userId: string): Promise<PrivateChat[]> {
-    return this.items.filter(
-      (item) => item.user1Id === userId || item.user2Id === userId,
+  async fetchByUserId({
+    paginationParams,
+    userId,
+  }: FetchPrivateChatsByUserIdRepositoryDto): Promise<
+    PaginationResult<PrivateChat>
+  > {
+    const { pageIndex, perPage, search } = paginationParams
+
+    const userPrivateChats = this.items.filter(
+      (item) =>
+        item.user1Id.toString() === userId ||
+        item.user2Id.toString() === userId,
     )
+
+    const allPrivateChatsThatMatchWithSearch = userPrivateChats.filter(
+      (chatMessageInChat) => {
+        const isUser1 = chatMessageInChat.user1Id.toString() === userId
+        const isUser2 = chatMessageInChat.user2Id.toString() === userId
+
+        return isUser1
+          ? chatMessageInChat.titleUser1.includes(search || '')
+          : isUser2 && chatMessageInChat.titleUser2.includes(search || '')
+      },
+    )
+
+    const allPrivateChatsThatMatchWithSearchPaginated =
+      allPrivateChatsThatMatchWithSearch.slice(
+        pageIndex * perPage,
+        (pageIndex + 1) * perPage,
+      )
+
+    return {
+      payload: allPrivateChatsThatMatchWithSearchPaginated,
+      meta: {
+        totalCount: allPrivateChatsThatMatchWithSearch.length,
+        pageIndex,
+        perPage,
+      },
+    }
   }
 
   async findByUsersId({
@@ -51,8 +76,10 @@ export class InMemoryPrivateChatsRepository implements PrivateChatsRepository {
   }: FindByUsersIdProps): Promise<PrivateChat | null> {
     const privateChat = this.items.find(
       (privateChat) =>
-        (privateChat.user1Id === user1Id && privateChat.user2Id === user2Id) ||
-        (privateChat.user1Id === user2Id && privateChat.user2Id === user1Id),
+        (privateChat.user1Id.toString() === user1Id &&
+          privateChat.user2Id.toString() === user2Id) ||
+        (privateChat.user1Id.toString() === user2Id &&
+          privateChat.user2Id.toString() === user1Id),
     )
 
     return privateChat || null

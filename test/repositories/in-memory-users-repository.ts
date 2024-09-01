@@ -1,19 +1,11 @@
-import { CreateUserDto } from '@/modules/user/dtos/create-user.dto'
-import { User } from '@/modules/user/infra/mongoose/user'
+import { User } from '@/modules/user/infra/mongoose/schemas/user'
 import { UsersRepository } from '@/modules/user/repositories/users-repository'
-import { Types } from 'mongoose'
 
 export class InMemoryUsersRepository implements UsersRepository {
   public items: User[] = []
 
-  async create(user: CreateUserDto): Promise<void> {
-    const newUser: User = {
-      _id: new Types.ObjectId(),
-      createdAt: new Date(),
-      ...user,
-    }
-
-    this.items.push(newUser)
+  async create(user: User): Promise<void> {
+    this.items.push(user)
   }
 
   async save(user: User): Promise<void> {

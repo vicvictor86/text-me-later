@@ -1,4 +1,4 @@
-import { User } from '../../mongoose/user'
+import { User } from '../../mongoose/schemas/user'
 
 export class UserPresenter {
   static toHTTP(user: User) {
