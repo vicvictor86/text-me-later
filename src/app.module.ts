@@ -7,7 +7,6 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { EnvService } from './shared/env/infra/env.service'
 import { DatabaseModule } from './shared/database/infra/database.module'
 import { HttpModule } from './shared/http/http.module'
-import { WebsocketsGatewayModule } from './shared/websocket/websockets.module'
 
 @Module({
   imports: [
@@ -25,7 +24,6 @@ import { WebsocketsGatewayModule } from './shared/websocket/websockets.module'
             : env.get('MONGO_URI'),
       }),
     }),
-    WebsocketsGatewayModule,
     AuthModule,
     DatabaseModule,
     EnvModule,

@@ -21,7 +21,6 @@ export class MongoChatMessagesRepository implements ChatMessagesRepository {
   > {
     const { pageIndex, perPage, search } = paginationParams
 
-    console.log(search || 'aaaaaaa')
     const chatMessages = await this.chatMessageModel
       .find(
         {

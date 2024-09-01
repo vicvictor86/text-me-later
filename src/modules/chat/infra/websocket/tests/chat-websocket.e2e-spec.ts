@@ -7,7 +7,10 @@ import { UserFactory } from 'test/factories/make-user'
 import { PrivateChatsRepository } from '../../../repositories/private-chats-repository'
 import { EnvModule } from '@/shared/env/infra/env.module'
 import { EnvService } from '@/shared/env/infra/env.service'
-import { asyncWebsocketEmit } from '../utils/await-websocket-emit'
+import {
+  asyncWebsocketEmit,
+  WebSocketResponse,
+} from '../utils/await-websocket-emit'
 import { CreatePrivateChatDto } from '@/modules/chat/dtos/create-private-chat.dto'
 import { CreatePrivateChatResponseDto } from '@/modules/chat/dtos/create-private-chat-response.dto'
 import { PrivateChatFactory } from 'test/factories/make-private-chat'
@@ -63,7 +66,7 @@ describe('Chat Web Socket Test (e2e)', () => {
     const user2Id = user2._id.toString()
 
     type Request = CreatePrivateChatDto
-    type Response = CreatePrivateChatResponseDto
+    type Response = WebSocketResponse<CreatePrivateChatResponseDto>
 
     const privateChatResponse = await asyncWebsocketEmit<Request, Response>(
       socket,
@@ -82,12 +85,13 @@ describe('Chat Web Socket Test (e2e)', () => {
 
     expect(privateChatOnDatabase).toBeDefined()
     expect(privateChatOnDatabase._id.toString()).toEqual(
-      privateChatResponse.chatId,
+      privateChatResponse.data.chatId,
     )
     expect(privateChatOnDatabase.titleUser1).toEqual('mariadoe')
 
     expect(privateChatResponse).toBeDefined()
-    expect(privateChatResponse).toEqual(
+    expect(privateChatResponse.status).toEqual('success')
+    expect(privateChatResponse.data).toEqual(
       expect.objectContaining({
         userId: user1._id.toString(),
         talkingUserId: user2._id.toString(),
