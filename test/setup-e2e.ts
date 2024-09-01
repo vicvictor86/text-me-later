@@ -1,4 +1,18 @@
+import { SocketOptions } from 'dgram'
 import mongoose from 'mongoose'
+import { ManagerOptions, Socket, connect } from 'socket.io-client'
+
+export class SocketTest {
+  public static socket: Socket
+
+  connect(url: string, options: Partial<ManagerOptions & SocketOptions>) {
+    SocketTest.socket = connect(url, options)
+  }
+
+  close() {
+    SocketTest.socket.close()
+  }
+}
 
 beforeEach(async () => {
   if (!process.env.MONGO_URI_TEST) {

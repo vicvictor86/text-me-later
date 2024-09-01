@@ -1,6 +1,8 @@
-import { Types } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { faker } from '@faker-js/faker'
 import { PrivateChat } from '@/modules/chat/infra/mongoose/schemas/private-chat'
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
 
 export function makePrivateChat(
   override: Partial<PrivateChat> = {},
@@ -19,19 +21,19 @@ export function makePrivateChat(
   return privateChat
 }
 
-// @Injectable()
-// export class PrivateChatFactory {
-//   constructor(
-//     @InjectModel(PrivateChat.name) private privatechatModel: Model<PrivateChat>,
-//   ) {}
+@Injectable()
+export class PrivateChatFactory {
+  constructor(
+    @InjectModel(PrivateChat.name) private privateChatModel: Model<PrivateChat>,
+  ) {}
 
-//   async makeMongoPrivateChat(data: Partial<CreatePrivateChatDto> = {}) {
-//     const privatechat = makePrivateChat(data)
+  async makeMongoPrivateChat(data: Partial<PrivateChat> = {}) {
+    const privateChat = makePrivateChat(data)
 
-//     await this.privatechatModel.create({
-//       ...privatechat,
-//     })
+    await this.privateChatModel.create({
+      ...privateChat,
+    })
 
-//     return privatechat
-//   }
-// }
+    return privateChat
+  }
+}

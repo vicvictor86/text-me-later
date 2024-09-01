@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io-client'
 
-export function asyncWebsocketEmit<Request, Response>(
+export function asyncWebsocketEmit<Request, Response = void>(
   socket: Socket,
   event: string,
   data: Request,

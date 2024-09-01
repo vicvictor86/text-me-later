@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   WebSocketGateway,
   OnGatewayInit,
@@ -14,6 +15,11 @@ import { Injectable } from '@nestjs/common'
 import { CreatePrivateChatDto } from '../../dtos/create-private-chat.dto'
 import { PrivateChatPresenter } from './presenters/private-chat.presenter'
 
+interface SendMessageResponse {
+  status: 'success' | 'error'
+  error?: Error
+}
+
 @WebSocketGateway()
 @Injectable()
 export class ChatWebSocketGateway
@@ -28,7 +34,6 @@ export class ChatWebSocketGateway
 
   @WebSocketServer() server: Server
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterInit(server: Server) {
     console.log('Chat Gateway initialized')
   }
@@ -45,7 +50,6 @@ export class ChatWebSocketGateway
 
   @SubscribeMessage('createPrivateChat')
   async handleCreateChat(client: Socket, payload: CreatePrivateChatDto) {
-    console.log(`Chat from client ${client.id}: ${payload}`)
     const privateChat = await this.privateChatsService.create(payload)
 
     return PrivateChatPresenter.toHTTP(privateChat, payload.whoRequestingId)
@@ -55,8 +59,12 @@ export class ChatWebSocketGateway
   async handleMessage(
     client: Socket,
     payload: CreateChatMessageDto,
-  ): Promise<void> {
-    console.log(`Message from client ${client.id}: ${payload}`)
-    await this.chatMessagesService.create(payload)
+  ): Promise<SendMessageResponse> {
+    try {
+      await this.chatMessagesService.create(payload)
+      return { status: 'success' }
+    } catch (error) {
+      return { status: 'error', error }
+    }
   }
 }

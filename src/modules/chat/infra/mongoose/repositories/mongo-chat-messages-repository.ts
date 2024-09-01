@@ -21,11 +21,12 @@ export class MongoChatMessagesRepository implements ChatMessagesRepository {
   > {
     const { pageIndex, perPage, search } = paginationParams
 
+    console.log(search || 'aaaaaaa')
     const chatMessages = await this.chatMessageModel
       .find(
         {
           chatId,
-          text: { $regex: search, $options: 'i' },
+          text: { $regex: search || '', $options: 'i' },
         },
         {},
         { limit: perPage, skip: pageIndex * perPage, sort: { createdAt: -1 } },
@@ -34,7 +35,7 @@ export class MongoChatMessagesRepository implements ChatMessagesRepository {
 
     const totalCount = await this.chatMessageModel.countDocuments({
       chatId,
-      text: { $regex: search, $options: 'i' },
+      text: { $regex: search || '', $options: 'i' },
     })
 
     const paginationResult: PaginationResult<ChatMessage> = {

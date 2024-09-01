@@ -76,8 +76,14 @@ export class MongoPrivateChatsRepository implements PrivateChatsRepository {
       .find(
         {
           $or: [
-            { titleUser1: { $regex: search, $options: 'i' }, user1Id: userId },
-            { titleUser2: { $regex: search, $options: 'i' }, user2Id: userId },
+            {
+              titleUser1: { $regex: search || '', $options: 'i' },
+              user1Id: userId,
+            },
+            {
+              titleUser2: { $regex: search || '', $options: 'i' },
+              user2Id: userId,
+            },
           ],
         },
         {},
@@ -87,8 +93,14 @@ export class MongoPrivateChatsRepository implements PrivateChatsRepository {
 
     const totalCount = await this.privateChatModel.countDocuments({
       $or: [
-        { titleUser1: { $regex: search, $options: 'i' }, user1Id: userId },
-        { titleUser2: { $regex: search, $options: 'i' }, user2Id: userId },
+        {
+          titleUser1: { $regex: search || '', $options: 'i' },
+          user1Id: userId,
+        },
+        {
+          titleUser2: { $regex: search || '', $options: 'i' },
+          user2Id: userId,
+        },
       ],
     })
 
