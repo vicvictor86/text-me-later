@@ -2,11 +2,12 @@ import { InMemoryPrivateChatsRepository } from 'test/repositories/in-memory-priv
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { makeUser } from 'test/factories/make-user'
 import { makePrivateChat } from 'test/factories/make-private-chat'
-import { InMemoryChatMessagesRepository } from 'test/repositories/in-mermory-chat-messages-repository'
+import { InMemoryChatMessagesRepository } from 'test/repositories/in-memory-chat-messages-repository'
 import { ChatMessagesService } from '../chat-messages.service'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
 import { ChatType } from '../../infra/mongoose/schemas/chat-message'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository
@@ -43,7 +44,6 @@ describe('Create Chat Message Service', () => {
     await inMemoryPrivateChatsRepository.create(privateChat)
 
     await chatMessagesService.create({
-      whoRequestingId: user1._id.toString(),
       chatId: privateChat._id.toString(),
       chatType: ChatType.PRIVATE,
       senderId: user1._id.toString(),
@@ -70,10 +70,11 @@ describe('Create Chat Message Service', () => {
     await inMemoryUsersRepository.create(user1)
     await inMemoryUsersRepository.create(user2)
 
+    const inexistentId = new UniqueEntityId().toString()
+
     expect(async () => {
       await chatMessagesService.create({
-        whoRequestingId: user1._id.toString(),
-        chatId: 'non-existing-id',
+        chatId: inexistentId,
         chatType: ChatType.PRIVATE,
         senderId: user1._id.toString(),
         text: 'Hello',
@@ -98,34 +99,9 @@ describe('Create Chat Message Service', () => {
 
     expect(async () => {
       await chatMessagesService.create({
-        whoRequestingId: outerUser._id.toString(),
         chatId: privateChat._id.toString(),
         chatType: ChatType.PRIVATE,
         senderId: outerUser._id.toString(),
-        text: 'Hello',
-      })
-    }).rejects.toBeInstanceOf(NotAllowedError)
-  })
-
-  it('should not be able to create a message if sender id and whoRequesting Id is different', async () => {
-    const user1 = makeUser()
-    const user2 = makeUser()
-
-    await inMemoryUsersRepository.create(user1)
-    await inMemoryUsersRepository.create(user2)
-
-    const privateChat = makePrivateChat({
-      user1Id: user1._id,
-      user2Id: user2._id,
-    })
-    await inMemoryPrivateChatsRepository.create(privateChat)
-
-    expect(async () => {
-      await chatMessagesService.create({
-        whoRequestingId: user1._id.toString(),
-        chatId: privateChat._id.toString(),
-        chatType: ChatType.PRIVATE,
-        senderId: 'non-existing-id',
         text: 'Hello',
       })
     }).rejects.toBeInstanceOf(NotAllowedError)

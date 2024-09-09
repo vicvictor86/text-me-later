@@ -5,7 +5,7 @@ import { makePrivateChat } from 'test/factories/make-private-chat'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { makeUser } from 'test/factories/make-user'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
-import { InMemoryChatMessagesRepository } from 'test/repositories/in-mermory-chat-messages-repository'
+import { InMemoryChatMessagesRepository } from 'test/repositories/in-memory-chat-messages-repository'
 import { ChatMessagesService } from '../chat-messages.service'
 
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository

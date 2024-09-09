@@ -2,12 +2,13 @@ import { InMemoryPrivateChatsRepository } from 'test/repositories/in-memory-priv
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { makePrivateChat } from 'test/factories/make-private-chat'
 import { ChatMessagesService } from '../chat-messages.service'
-import { InMemoryChatMessagesRepository } from 'test/repositories/in-mermory-chat-messages-repository'
+import { InMemoryChatMessagesRepository } from 'test/repositories/in-memory-chat-messages-repository'
 import { makeUser } from 'test/factories/make-user'
 import { makeChatMessage } from 'test/factories/make-chat-message'
 import { ChatType } from '../../infra/mongoose/schemas/chat-message'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository
 let inMemoryUsersRepository: InMemoryUsersRepository
@@ -74,11 +75,13 @@ describe('Fetch Messages By Chat Id Service', () => {
     await inMemoryUsersRepository.create(user1)
     await inMemoryUsersRepository.create(user2)
 
+    const inexistentId = new UniqueEntityId().toString()
+
     expect(async () => {
       await chatMessagesService.fetchByChatId({
         whoRequestingId: user1._id.toString(),
         chatType: ChatType.PRIVATE,
-        chatId: 'non-existing-id',
+        chatId: inexistentId,
         paginationParams: {
           pageIndex: 2,
           perPage: 10,

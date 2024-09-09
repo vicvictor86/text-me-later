@@ -5,7 +5,7 @@ import { makeUser } from 'test/factories/make-user'
 import { makePrivateChat } from 'test/factories/make-private-chat'
 import { ChatAlreadyExistsError } from '../../errors/chat-already-exists-error'
 import { ChatMessagesService } from '../chat-messages.service'
-import { InMemoryChatMessagesRepository } from 'test/repositories/in-mermory-chat-messages-repository'
+import { InMemoryChatMessagesRepository } from 'test/repositories/in-memory-chat-messages-repository'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository

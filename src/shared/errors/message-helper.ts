@@ -4,6 +4,7 @@ export const MessageHelper = {
   USER_ALREADY_EXISTS_ERROR: (reason: string) => `${reason} já está cadastrado`,
   USER_NOT_ACTIVE_ERROR: `Usuário não está ativo`,
   CHAT_ALREADY_EXISTS_ERROR: `Chat já existe`,
+  INVALID_ID: 'O ID fornecido é inválido',
 
   WRONG_CREDENTIALS_ERROR: `Credenciais inválidas`,
   RECOVERY_PASSWORD_CODE_EXPIRED: 'Código de recuperação de senha expirado',

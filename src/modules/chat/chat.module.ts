@@ -4,9 +4,10 @@ import { PrivateChatsService } from './services/private-chats.service'
 import { DatabaseModule } from '@/shared/database/infra/database.module'
 import { ChatWebSocketGateway } from './infra/websocket/chat-websocket.gateway'
 import { ChatMessagesService } from './services/chat-messages.service'
+import { AuthModule } from '@/shared/auth/infra/auth.module'
 
 @Module({
-  imports: [DatabaseModule, CryptographyModule],
+  imports: [DatabaseModule, CryptographyModule, AuthModule],
   controllers: [],
   providers: [PrivateChatsService, ChatMessagesService, ChatWebSocketGateway],
   exports: [PrivateChatsService, ChatMessagesService, ChatWebSocketGateway],

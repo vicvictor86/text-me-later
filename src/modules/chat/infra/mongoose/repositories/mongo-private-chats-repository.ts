@@ -5,6 +5,7 @@ import {
   PrivateChatsRepository,
 } from '@/modules/chat/repositories/private-chats-repository'
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
@@ -44,10 +45,10 @@ export class MongoPrivateChatsRepository implements PrivateChatsRepository {
     )
   }
 
-  async findById(id: string): Promise<PrivateChat | null> {
+  async findById(id: UniqueEntityId): Promise<PrivateChat | null> {
     return this.privateChatModel
       .findOne({
-        _id: id,
+        _id: id.toObjectId(),
       })
       .exec()
   }

@@ -5,6 +5,7 @@ import { AccountStatus } from '../../infra/mongoose/schemas/user'
 import { FakeHasher } from 'test/cryptography/fake-hasher'
 import { FakeEncrypter } from 'test/cryptography/fake-encrypter'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let fakeEncrypter: FakeEncrypter
@@ -38,8 +39,9 @@ describe('Confirm Email User Service', () => {
   })
 
   it('should not be able to confirm a email from a non existing user', async () => {
+    const inexistentId = new UniqueEntityId().toString()
     expect(async () => {
-      await sut.confirmEmail('non-existing-id')
+      await sut.confirmEmail(inexistentId)
     }).rejects.toBeInstanceOf(ResourceNotFoundError)
   })
 })

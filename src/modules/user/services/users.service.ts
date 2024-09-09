@@ -10,6 +10,7 @@ import { UserAlreadyExistsError } from './errors/user-already-exists-error'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { UserNotActiveError } from './errors/user-not-active.error'
 import { WrongCredentialsError } from './errors/wrong-credentials-error'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 @Injectable()
 export class UsersService {
@@ -53,7 +54,8 @@ export class UsersService {
   }
 
   async confirmEmail(id: string): Promise<void> {
-    const user = await this.usersRepository.findById(id)
+    const userIdUEID = new UniqueEntityId(id)
+    const user = await this.usersRepository.findById(userIdUEID)
 
     if (!user) {
       throw new ResourceNotFoundError('Usuário')

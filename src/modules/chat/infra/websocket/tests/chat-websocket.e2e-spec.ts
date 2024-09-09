@@ -14,10 +14,14 @@ import {
 import { CreatePrivateChatDto } from '@/modules/chat/dtos/create-private-chat.dto'
 import { CreatePrivateChatResponseDto } from '@/modules/chat/dtos/create-private-chat-response.dto'
 import { PrivateChatFactory } from 'test/factories/make-private-chat'
-import { CreateChatMessageDto } from '@/modules/chat/dtos/create-chat-message.dto'
 import { ChatType } from '../../mongoose/schemas/chat-message'
 import { ChatMessagesRepository } from '@/modules/chat/repositories/chat-messages-repository'
 import { EventSubscriptions } from '../events-subscriptions'
+import { User } from '@/modules/user/infra/mongoose/schemas/user'
+import { JwtService } from '@nestjs/jwt'
+import { CryptographyModule } from '@/shared/cryptography/infra/cryptography.module'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
+import { SendMessageBodySchema } from '../chat-websocket.gateway'
 
 describe('Chat Web Socket Test (e2e)', () => {
   let app: INestApplication
@@ -27,9 +31,13 @@ describe('Chat Web Socket Test (e2e)', () => {
   let userFactory: UserFactory
   let privateChatFactory: PrivateChatFactory
 
+  let jwt: JwtService
+
+  let user1: User
+
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule, DatabaseModule, EnvModule],
+      imports: [AppModule, DatabaseModule, EnvModule, CryptographyModule],
       providers: [UserFactory, PrivateChatFactory, EnvService],
     }).compile()
 
@@ -45,11 +53,20 @@ describe('Chat Web Socket Test (e2e)', () => {
     userFactory = moduleRef.get(UserFactory)
     privateChatFactory = moduleRef.get(PrivateChatFactory)
 
+    jwt = moduleRef.get(JwtService)
+
     await app.init()
 
     app.listen(port)
+
+    user1 = await userFactory.makeMongoUser({ username: 'johndoe' })
+    const accessToken = jwt.sign({ sub: user1._id.toString() })
+
     socket = connect(`http://localhost:${port}`, {
       forceNew: true,
+      extraHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     })
   })
 
@@ -59,31 +76,41 @@ describe('Chat Web Socket Test (e2e)', () => {
   })
 
   test('User send first message to other user', async () => {
-    const user1 = await userFactory.makeMongoUser({ username: 'johndoe' })
     const user2 = await userFactory.makeMongoUser({ username: 'mariadoe' })
 
-    const user1Id = user1._id.toString()
-    const user2Id = user2._id.toString()
-
-    type Request = CreatePrivateChatDto
+    type Request = Omit<CreatePrivateChatDto, 'whoRequestingId'>
     type Response = WebSocketResponse<CreatePrivateChatResponseDto>
 
     const privateChatResponse = await asyncWebsocketEmit<Request, Response>(
       socket,
       EventSubscriptions.CreatePrivateChat,
       {
-        whoRequestingId: user1Id,
-        otherUserId: user2Id,
+        otherUserId: user2._id.toString(),
         text: 'Oi',
       },
     )
 
+    if (privateChatResponse.status === 'error') {
+      console.log(privateChatResponse.data)
+    }
+
+    expect(privateChatResponse.status).toEqual('success')
+
     const privateChatOnDatabase = await privateChatsRepository.findByUsersId({
-      user1Id,
-      user2Id,
+      user1Id: new UniqueEntityId(user1._id.toString()),
+      user2Id: new UniqueEntityId(user2._id.toString()),
     })
 
-    expect(privateChatOnDatabase).toBeDefined()
+    expect(privateChatOnDatabase).toBeTruthy()
+
+    if (!privateChatOnDatabase) {
+      throw new Error('Private chat not found')
+    }
+
+    if (!privateChatResponse.data) {
+      throw new Error('Private chat response not found')
+    }
+
     expect(privateChatOnDatabase._id.toString()).toEqual(
       privateChatResponse.data.chatId,
     )
@@ -101,10 +128,7 @@ describe('Chat Web Socket Test (e2e)', () => {
   })
 
   test('User send a message to other user in a already existing chat', async () => {
-    const user1 = await userFactory.makeMongoUser()
     const user2 = await userFactory.makeMongoUser()
-
-    const user1Id = user1._id.toString()
 
     const privateChat = await privateChatFactory.makeMongoPrivateChat({
       user1Id: user1._id,
@@ -113,15 +137,17 @@ describe('Chat Web Socket Test (e2e)', () => {
       titleUser2: user1.username,
     })
 
-    type Request = CreateChatMessageDto
+    type Request = SendMessageBodySchema
 
-    await asyncWebsocketEmit<Request>(socket, EventSubscriptions.SendMessage, {
-      chatId: privateChat._id.toString(),
-      whoRequestingId: user1Id,
-      senderId: user1Id,
-      text: 'Oi',
-      chatType: ChatType.PRIVATE,
-    })
+    await asyncWebsocketEmit<Request, WebSocketResponse>(
+      socket,
+      EventSubscriptions.SendMessage,
+      {
+        chatId: privateChat._id.toString(),
+        text: 'Oi',
+        chatType: ChatType.PRIVATE,
+      },
+    )
 
     const chatMessagesOnDatabase = await chatMessagesRepository.fetchByChatId({
       chatId: privateChat._id.toString(),

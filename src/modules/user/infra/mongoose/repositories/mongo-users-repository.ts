@@ -4,6 +4,7 @@ import { Model } from 'mongoose'
 import { UsersRepository } from '../../../repositories/users-repository'
 import { User } from '../schemas/user'
 import { CreateUserDto } from '../../../dtos/create-user.dto'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 @Injectable()
 export class MongoUsersRepository implements UsersRepository {
@@ -61,10 +62,10 @@ export class MongoUsersRepository implements UsersRepository {
     return user
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: UniqueEntityId): Promise<User | null> {
     return this.userModel
       .findOne({
-        _id: id,
+        _id: id.toObjectId(),
       })
       .exec()
   }

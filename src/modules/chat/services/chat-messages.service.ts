@@ -8,7 +8,7 @@ import { PaginationResult } from '@/shared/database/repositories/pagination-para
 import { CreateChatMessageDto } from '../dtos/create-chat-message.dto'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
-import { makeObjectId } from '@/shared/database/repositories/object-id'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 @Injectable()
 export class ChatMessagesService {
@@ -19,26 +19,24 @@ export class ChatMessagesService {
   ) {}
 
   async create({
-    whoRequestingId,
-    chatType,
     senderId,
+    chatType,
     chatId,
     text,
   }: CreateChatMessageDto): Promise<void> {
-    const user = await this.usersRepository.findById(whoRequestingId)
+    const chatIdUEID = new UniqueEntityId(chatId)
+    const senderIdUEID = new UniqueEntityId(senderId)
+
+    const user = await this.usersRepository.findById(senderIdUEID)
 
     if (!user) {
       throw new ResourceNotFoundError('Usuário')
     }
 
-    if (whoRequestingId !== senderId) {
-      throw new NotAllowedError()
-    }
-
     const isPrivateChat = chatType === ChatType.PRIVATE
 
     if (isPrivateChat) {
-      const privateChat = await this.privateChatsRepository.findById(chatId)
+      const privateChat = await this.privateChatsRepository.findById(chatIdUEID)
 
       if (!privateChat) {
         throw new ResourceNotFoundError('Chat')
@@ -52,13 +50,10 @@ export class ChatMessagesService {
       }
     }
 
-    const chatIdObjectId = makeObjectId(chatId)
-    const senderIdObjectId = makeObjectId(senderId)
-
     await this.chatMessagesRepository.create(
       new ChatMessage({
-        chatId: chatIdObjectId,
-        senderId: senderIdObjectId,
+        chatId: chatIdUEID.toObjectId(),
+        senderId: senderIdUEID.toObjectId(),
         text,
         chatType,
       }),
@@ -71,14 +66,17 @@ export class ChatMessagesService {
     chatType,
     paginationParams,
   }: FetchMessagesByChatIdServiceDto): Promise<PaginationResult<ChatMessage>> {
-    const user = await this.usersRepository.findById(whoRequestingId)
+    const whoRequestingIdUEID = new UniqueEntityId(whoRequestingId)
+    const chatIdUEID = new UniqueEntityId(chatId)
+
+    const user = await this.usersRepository.findById(whoRequestingIdUEID)
 
     if (!user) {
       throw new ResourceNotFoundError('Usuário')
     }
 
     if (chatType === ChatType.PRIVATE) {
-      const privateChat = await this.privateChatsRepository.findById(chatId)
+      const privateChat = await this.privateChatsRepository.findById(chatIdUEID)
 
       if (!privateChat) {
         throw new ResourceNotFoundError('Chat')

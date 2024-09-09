@@ -3,7 +3,7 @@ import { PrivateChatsService } from '../private-chats.service'
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
 import { makePrivateChat } from 'test/factories/make-private-chat'
 import { makeUser } from 'test/factories/make-user'
-import { InMemoryChatMessagesRepository } from 'test/repositories/in-mermory-chat-messages-repository'
+import { InMemoryChatMessagesRepository } from 'test/repositories/in-memory-chat-messages-repository'
 import { ChatMessagesService } from '../chat-messages.service'
 
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository

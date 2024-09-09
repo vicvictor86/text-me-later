@@ -14,7 +14,7 @@ export class SocketTest {
   }
 }
 
-beforeEach(async () => {
+beforeAll(async () => {
   if (!process.env.MONGO_URI_TEST) {
     throw new Error('Please provide MONGO_URI_TEST in .env file')
   }

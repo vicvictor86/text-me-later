@@ -2,6 +2,7 @@ import { FetchMessagesByChatIdRepositoryDto } from '@/modules/chat/dtos/fetch-me
 import { ChatMessage } from '@/modules/chat/infra/mongoose/schemas/chat-message'
 import { ChatMessagesRepository } from '@/modules/chat/repositories/chat-messages-repository'
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
@@ -83,10 +84,10 @@ export class MongoChatMessagesRepository implements ChatMessagesRepository {
     )
   }
 
-  async findById(id: string): Promise<ChatMessage | null> {
+  async findById(id: UniqueEntityId): Promise<ChatMessage | null> {
     return this.chatMessageModel
       .findOne({
-        _id: id,
+        _id: id.toObjectId(),
       })
       .exec()
   }

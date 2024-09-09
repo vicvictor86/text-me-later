@@ -1,5 +1,6 @@
 import { User } from '@/modules/user/infra/mongoose/schemas/user'
 import { UsersRepository } from '@/modules/user/repositories/users-repository'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 export class InMemoryUsersRepository implements UsersRepository {
   public items: User[] = []
@@ -26,8 +27,10 @@ export class InMemoryUsersRepository implements UsersRepository {
     return user || null
   }
 
-  async findById(id: string): Promise<User | null> {
-    const user = this.items.find((user) => user._id.toString() === id)
+  async findById(id: UniqueEntityId): Promise<User | null> {
+    const user = this.items.find(
+      (user) => user._id.toString() === id.toString(),
+    )
 
     return user || null
   }

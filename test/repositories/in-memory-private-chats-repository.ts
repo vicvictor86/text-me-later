@@ -5,6 +5,7 @@ import {
   PrivateChatsRepository,
 } from '@/modules/chat/repositories/private-chats-repository'
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 export class InMemoryPrivateChatsRepository implements PrivateChatsRepository {
   public items: PrivateChat[] = []
@@ -15,8 +16,10 @@ export class InMemoryPrivateChatsRepository implements PrivateChatsRepository {
     return privateChat
   }
 
-  async findById(id: string): Promise<PrivateChat | null> {
-    const privateChat = this.items.find((item) => item._id.toString() === id)
+  async findById(id: UniqueEntityId): Promise<PrivateChat | null> {
+    const privateChat = this.items.find(
+      (item) => item._id.toString() === id.toString(),
+    )
 
     return privateChat || null
   }
@@ -39,14 +42,16 @@ export class InMemoryPrivateChatsRepository implements PrivateChatsRepository {
 
     const userPrivateChats = this.items.filter(
       (item) =>
-        item.user1Id.toString() === userId ||
-        item.user2Id.toString() === userId,
+        item.user1Id.toString() === userId.toString() ||
+        item.user2Id.toString() === userId.toString(),
     )
 
     const allPrivateChatsThatMatchWithSearch = userPrivateChats.filter(
       (chatMessageInChat) => {
-        const isUser1 = chatMessageInChat.user1Id.toString() === userId
-        const isUser2 = chatMessageInChat.user2Id.toString() === userId
+        const isUser1 =
+          chatMessageInChat.user1Id.toString() === userId.toString()
+        const isUser2 =
+          chatMessageInChat.user2Id.toString() === userId.toString()
 
         return isUser1
           ? chatMessageInChat.titleUser1.includes(search || '')
@@ -76,10 +81,10 @@ export class InMemoryPrivateChatsRepository implements PrivateChatsRepository {
   }: FindByUsersIdProps): Promise<PrivateChat | null> {
     const privateChat = this.items.find(
       (privateChat) =>
-        (privateChat.user1Id.toString() === user1Id &&
-          privateChat.user2Id.toString() === user2Id) ||
-        (privateChat.user1Id.toString() === user2Id &&
-          privateChat.user2Id.toString() === user1Id),
+        (privateChat.user1Id.toString() === user1Id.toString() &&
+          privateChat.user2Id.toString() === user2Id.toString()) ||
+        (privateChat.user1Id.toString() === user2Id.toString() &&
+          privateChat.user2Id.toString() === user1Id.toString()),
     )
 
     return privateChat || null

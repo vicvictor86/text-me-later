@@ -11,29 +11,30 @@ import { Socket, Server } from 'socket.io'
 import { CreateChatMessageDto } from '../../dtos/create-chat-message.dto'
 import { ChatMessagesService } from '../../services/chat-messages.service'
 import { PrivateChatsService } from '../../services/private-chats.service'
-import { Body, Injectable, UsePipes } from '@nestjs/common'
-import { CreatePrivateChatDto } from '../../dtos/create-private-chat.dto'
+import { Body, Injectable, UseGuards, UsePipes } from '@nestjs/common'
 import { PrivateChatPresenter } from './presenters/private-chat.presenter'
 import { WebSocketResponse } from './utils/await-websocket-emit'
 import { EventSubscriptions } from './events-subscriptions'
 import { z } from 'zod'
 import { ZodValidationPipe } from '@/shared/http/pipes/zod-validation-pipe'
 import { ChatType } from '../mongoose/schemas/chat-message'
+import { CurrentUser } from '@/shared/auth/infra/current-user-decorator'
+import { UserPayload } from '@/shared/auth/infra/jwt.strategy'
+import { JwtAuthGuard } from '@/shared/auth/infra/jwt-auth.guard'
 
 const sendMessageBodySchema = z.object({
-  whoRequestingId: z.string(),
-  senderId: z.string(),
-  chatId: z.string(),
   text: z.string().min(1).max(3000),
   chatType: z.nativeEnum(ChatType),
+  chatId: z.string(),
 })
 
 const sendMessageBodySchemaBodyValidationPipe = new ZodValidationPipe(
   sendMessageBodySchema,
 )
 
+export type SendMessageBodySchema = z.infer<typeof sendMessageBodySchema>
+
 const createPrivateChatBodySchema = z.object({
-  whoRequestingId: z.string(),
   otherUserId: z.string(),
   text: z.string().min(1).max(3000),
 })
@@ -41,6 +42,10 @@ const createPrivateChatBodySchema = z.object({
 const createPrivateChatBodySchemaBodyValidationPipe = new ZodValidationPipe(
   createPrivateChatBodySchema,
 )
+
+export type CreatePrivateChatBodySchema = z.infer<
+  typeof createPrivateChatBodySchema
+>
 
 @WebSocketGateway()
 @Injectable()
@@ -67,31 +72,52 @@ export class ChatWebSocketGateway
     this.clients.delete(client)
   }
 
-  @UsePipes(createPrivateChatBodySchemaBodyValidationPipe)
+  @UseGuards(JwtAuthGuard)
   @SubscribeMessage(EventSubscriptions.CreatePrivateChat)
   async handleCreateChat(
     client: Socket,
-    @Body() payload: CreatePrivateChatDto,
+    @CurrentUser() user: UserPayload,
+    @Body(createPrivateChatBodySchemaBodyValidationPipe)
+    payload: CreatePrivateChatBodySchema,
   ): Promise<WebSocketResponse> {
     try {
-      const privateChat = await this.privateChatsService.create(payload)
+      const whoRequestingId = user.sub
+
+      const { otherUserId, text } = payload
+
+      const privateChat = await this.privateChatsService.create({
+        whoRequestingId,
+        otherUserId,
+        text,
+      })
+
       return {
         status: 'success',
-        data: PrivateChatPresenter.toHTTP(privateChat, payload.whoRequestingId),
+        data: PrivateChatPresenter.toHTTP(privateChat, whoRequestingId),
       }
     } catch (error) {
       return { status: 'error', data: error }
     }
   }
 
-  @UsePipes(sendMessageBodySchemaBodyValidationPipe)
+  @UseGuards(JwtAuthGuard)
   @SubscribeMessage(EventSubscriptions.SendMessage)
   async handleMessage(
     client: Socket,
-    @Body() payload: CreateChatMessageDto,
+    @CurrentUser() user: UserPayload,
+    @Body(sendMessageBodySchemaBodyValidationPipe)
+    payload: SendMessageBodySchema,
   ): Promise<WebSocketResponse> {
     try {
-      await this.chatMessagesService.create(payload)
+      const whoRequestingId = user.sub
+
+      await this.chatMessagesService.create({
+        chatType: payload.chatType,
+        senderId: whoRequestingId,
+        chatId: payload.chatId,
+        text: payload.text,
+      })
+
       return { status: 'success' }
     } catch (error) {
       return { status: 'error', data: error }

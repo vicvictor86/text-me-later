@@ -1,10 +1,11 @@
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
 import { PrivateChat } from '../infra/mongoose/schemas/private-chat'
 import { FetchPrivateChatsByUserIdRepositoryDto } from '../dtos/fetch-private-chats-by-user-id-service.dto'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 export interface FindByUsersIdProps {
-  user1Id: string
-  user2Id: string
+  user1Id: UniqueEntityId
+  user2Id: UniqueEntityId
 }
 
 export abstract class PrivateChatsRepository {
@@ -12,7 +13,7 @@ export abstract class PrivateChatsRepository {
 
   abstract save(privateChat: PrivateChat): Promise<void>
 
-  abstract findById(id: string): Promise<PrivateChat | null>
+  abstract findById(id: UniqueEntityId): Promise<PrivateChat | null>
   abstract findByUsersId(
     usersId: FindByUsersIdProps,
   ): Promise<PrivateChat | null>

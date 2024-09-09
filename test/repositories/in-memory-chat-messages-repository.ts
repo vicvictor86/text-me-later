@@ -2,6 +2,7 @@ import { FetchMessagesByChatIdServiceDto } from '@/modules/chat/dtos/fetch-messa
 import { ChatMessage } from '@/modules/chat/infra/mongoose/schemas/chat-message'
 import { ChatMessagesRepository } from '@/modules/chat/repositories/chat-messages-repository'
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 
 export class InMemoryChatMessagesRepository implements ChatMessagesRepository {
   public items: ChatMessage[] = []
@@ -10,9 +11,9 @@ export class InMemoryChatMessagesRepository implements ChatMessagesRepository {
     this.items.push(chatMessage)
   }
 
-  async findById(id: string): Promise<ChatMessage | null> {
+  async findById(id: UniqueEntityId): Promise<ChatMessage | null> {
     const ChatMessage = this.items.find(
-      (ChatMessage) => ChatMessage._id.toString() === id,
+      (ChatMessage) => ChatMessage._id.toString() === id.toString(),
     )
 
     return ChatMessage || null
