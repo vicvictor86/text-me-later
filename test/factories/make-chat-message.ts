@@ -18,6 +18,7 @@ export function makeChatMessage(
     text: faker.lorem.sentence(),
     chatType: ChatType.PRIVATE,
     createdAt: new Date(),
+    isForwarded: false,
     ...override,
   }
 

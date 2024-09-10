@@ -1,9 +1,8 @@
 import { ChatType } from '../infra/mongoose/schemas/chat-message'
 
-export class CreateChatMessageDto {
+export class ForwardMessageDto {
   senderId: string
   chatId: string
-  text: string
-  isForwarded?: boolean
+  messageId: string
   chatType: ChatType
 }

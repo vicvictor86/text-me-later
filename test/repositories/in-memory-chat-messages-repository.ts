@@ -1,4 +1,4 @@
-import { FetchMessagesByChatIdServiceDto } from '@/modules/chat/dtos/fetch-messages-by-chat-id-service.dto'
+import { FetchMessagesByChatIdRepositoryDto } from '@/modules/chat/dtos/fetch-messages-by-chat-id-service.dto'
 import { ChatMessage } from '@/modules/chat/infra/mongoose/schemas/chat-message'
 import { ChatMessagesRepository } from '@/modules/chat/repositories/chat-messages-repository'
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
@@ -30,7 +30,9 @@ export class InMemoryChatMessagesRepository implements ChatMessagesRepository {
   async fetchByChatId({
     chatId,
     paginationParams,
-  }: FetchMessagesByChatIdServiceDto): Promise<PaginationResult<ChatMessage>> {
+  }: FetchMessagesByChatIdRepositoryDto): Promise<
+    PaginationResult<ChatMessage>
+  > {
     const { pageIndex, perPage, search } = paginationParams
 
     const chatMessagesInChat = this.items.filter(

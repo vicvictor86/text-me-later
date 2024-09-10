@@ -47,6 +47,18 @@ export type CreatePrivateChatBodySchema = z.infer<
   typeof createPrivateChatBodySchema
 >
 
+const forwardMessageBodySchema = z.object({
+  chatType: z.nativeEnum(ChatType),
+  messageId: z.string(),
+  chatId: z.string(),
+})
+
+const forwardMessageBodySchemaBodyValidationPipe = new ZodValidationPipe(
+  forwardMessageBodySchema,
+)
+
+export type ForwardMessageBodySchema = z.infer<typeof forwardMessageBodySchema>
+
 @WebSocketGateway()
 @Injectable()
 export class ChatWebSocketGateway
@@ -116,6 +128,30 @@ export class ChatWebSocketGateway
         senderId: whoRequestingId,
         chatId: payload.chatId,
         text: payload.text,
+      })
+
+      return { status: 'success' }
+    } catch (error) {
+      return { status: 'error', data: error }
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @SubscribeMessage(EventSubscriptions.ForwardMessage)
+  async handleForwardMessage(
+    client: Socket,
+    @CurrentUser() user: UserPayload,
+    @Body(forwardMessageBodySchemaBodyValidationPipe)
+    payload: ForwardMessageBodySchema,
+  ): Promise<WebSocketResponse> {
+    try {
+      const whoRequestingId = user.sub
+
+      await this.chatMessagesService.forwardMessage({
+        messageId: payload.messageId,
+        senderId: whoRequestingId,
+        chatId: payload.chatId,
+        chatType: payload.chatType,
       })
 
       return { status: 'success' }

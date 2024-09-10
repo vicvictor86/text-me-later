@@ -50,18 +50,8 @@ export class MongoChatMessagesRepository implements ChatMessagesRepository {
     return paginationResult
   }
 
-  async create({
-    chatId,
-    chatType,
-    senderId,
-    text,
-  }: ChatMessage): Promise<void> {
-    await this.chatMessageModel.create({
-      chatId,
-      chatType,
-      senderId,
-      text,
-    })
+  async create(chatMessage: ChatMessage): Promise<void> {
+    await this.chatMessageModel.create(chatMessage)
   }
 
   async save({

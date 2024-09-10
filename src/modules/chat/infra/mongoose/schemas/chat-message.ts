@@ -9,12 +9,15 @@ export enum ChatType {
 
 @Schema({ timestamps: true })
 export class ChatMessage {
-  constructor(chatMessage: Optional<ChatMessage, '_id' | 'createdAt'>) {
+  constructor(
+    chatMessage: Optional<ChatMessage, '_id' | 'isForwarded' | 'createdAt'>,
+  ) {
     this._id = chatMessage._id ?? new Types.ObjectId()
     this.chatId = chatMessage.chatId
     this.senderId = chatMessage.senderId
     this.text = chatMessage.text
     this.chatType = chatMessage.chatType
+    this.isForwarded = chatMessage.isForwarded ?? false
     this.createdAt = chatMessage.createdAt ?? new Date()
   }
 
@@ -41,6 +44,9 @@ export class ChatMessage {
     default: ChatType.PRIVATE,
   })
   chatType: ChatType
+
+  @Prop({ type: Boolean, default: false })
+  isForwarded: boolean
 
   @Prop({ type: Date, default: Date.now })
   createdAt: Date

@@ -9,6 +9,7 @@ import { CreateChatMessageDto } from '../dtos/create-chat-message.dto'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
 import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
+import { ForwardMessageDto } from '../dtos/forwardMessage.dto'
 
 @Injectable()
 export class ChatMessagesService {
@@ -22,6 +23,7 @@ export class ChatMessagesService {
     senderId,
     chatType,
     chatId,
+    isForwarded,
     text,
   }: CreateChatMessageDto): Promise<void> {
     const chatIdUEID = new UniqueEntityId(chatId)
@@ -55,6 +57,7 @@ export class ChatMessagesService {
         chatId: chatIdUEID.toObjectId(),
         senderId: senderIdUEID.toObjectId(),
         text,
+        isForwarded,
         chatType,
       }),
     )
@@ -96,5 +99,28 @@ export class ChatMessagesService {
     })
 
     return chatMessages
+  }
+
+  async forwardMessage({
+    senderId,
+    chatId,
+    messageId,
+    chatType,
+  }: ForwardMessageDto): Promise<void> {
+    const messageIdUEID = new UniqueEntityId(messageId)
+
+    const message = await this.chatMessagesRepository.findById(messageIdUEID)
+
+    if (!message) {
+      throw new ResourceNotFoundError('Mensagem')
+    }
+
+    await this.create({
+      chatId,
+      chatType,
+      senderId,
+      text: message.text,
+      isForwarded: true,
+    })
   }
 }
