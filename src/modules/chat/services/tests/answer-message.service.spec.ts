@@ -8,10 +8,12 @@ import { makeChatMessage } from 'test/factories/make-chat-message'
 import { ChatType } from '../../infra/mongoose/schemas/chat-message'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
+import { InMemoryGroupChatsRepository } from 'test/repositories/in-memory-group-chats-repository'
 
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository
+let inMemoryGroupChatsRepository: InMemoryGroupChatsRepository
 
 let chatMessagesService: ChatMessagesService
 
@@ -20,11 +22,13 @@ describe('Answer Message Service', () => {
     inMemoryChatMessagesRepository = new InMemoryChatMessagesRepository()
     inMemoryUsersRepository = new InMemoryUsersRepository()
     inMemoryPrivateChatsRepository = new InMemoryPrivateChatsRepository()
+    inMemoryGroupChatsRepository = new InMemoryGroupChatsRepository()
 
     chatMessagesService = new ChatMessagesService(
       inMemoryChatMessagesRepository,
       inMemoryPrivateChatsRepository,
       inMemoryUsersRepository,
+      inMemoryGroupChatsRepository,
     )
   })
 

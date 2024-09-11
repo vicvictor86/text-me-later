@@ -32,6 +32,14 @@ export class GroupChatsService {
       throw new ResourceNotFoundError('Usuário')
     }
 
+    const whoRequestingIsAMemberGroup = members.find(
+      (member) => member === whoRequestingId,
+    )
+
+    if (!whoRequestingIsAMemberGroup) {
+      members.push(whoRequestingId)
+    }
+
     const membersUEID = members.map((memberId) => new UniqueEntityId(memberId))
     const membersObjectId = membersUEID.map((memberUEID) =>
       memberUEID.toObjectId(),
@@ -56,14 +64,10 @@ export class GroupChatsService {
       }),
     )
 
-    await this.groupChatsRepository.create(groupChat)
-
     return groupChat
   }
 
-  async findById({ whoRequestingId, chatId }: FindGroupChatByIdDto): Promise<{
-    groupChat: GroupChat
-  }> {
+  async findById({ whoRequestingId, chatId }: FindGroupChatByIdDto) {
     const whoRequestingIdUEID = new UniqueEntityId(whoRequestingId)
     const chatIdUEID = new UniqueEntityId(chatId)
 

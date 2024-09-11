@@ -6,10 +6,12 @@ import { makePrivateChat } from 'test/factories/make-private-chat'
 import { ChatAlreadyExistsError } from '../../errors/chat-already-exists-error'
 import { ChatMessagesService } from '../chat-messages.service'
 import { InMemoryChatMessagesRepository } from 'test/repositories/in-memory-chat-messages-repository'
+import { InMemoryGroupChatsRepository } from 'test/repositories/in-memory-group-chats-repository'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository
+let inMemoryGroupChatsRepository: InMemoryGroupChatsRepository
 
 let chatMessagesService: ChatMessagesService
 let privateChatsService: PrivateChatsService
@@ -19,11 +21,13 @@ describe('Create Private Chat Service', () => {
     inMemoryUsersRepository = new InMemoryUsersRepository()
     inMemoryPrivateChatsRepository = new InMemoryPrivateChatsRepository()
     inMemoryChatMessagesRepository = new InMemoryChatMessagesRepository()
+    inMemoryGroupChatsRepository = new InMemoryGroupChatsRepository()
 
     chatMessagesService = new ChatMessagesService(
       inMemoryChatMessagesRepository,
       inMemoryPrivateChatsRepository,
       inMemoryUsersRepository,
+      inMemoryGroupChatsRepository,
     )
 
     privateChatsService = new PrivateChatsService(

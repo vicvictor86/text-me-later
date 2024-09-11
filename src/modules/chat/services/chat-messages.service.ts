@@ -11,6 +11,7 @@ import { NotAllowedError } from '@/shared/errors/not-allowed-error'
 import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
 import { ForwardMessageDto } from '../dtos/forward-message.dto'
 import { AnswerMessageDto } from '../dtos/answer-message.dto'
+import { GroupChatsRepository } from '../repositories/group-chats-repository'
 
 @Injectable()
 export class ChatMessagesService {
@@ -18,6 +19,7 @@ export class ChatMessagesService {
     private chatMessagesRepository: ChatMessagesRepository,
     private privateChatsRepository: PrivateChatsRepository,
     private usersRepository: UsersRepository,
+    private groupChatsRepository: GroupChatsRepository,
   ) {}
 
   async create({
@@ -38,6 +40,7 @@ export class ChatMessagesService {
     }
 
     const isPrivateChat = chatType === ChatType.PRIVATE
+    const isGroupChat = chatType === ChatType.GROUP
 
     if (isPrivateChat) {
       const privateChat = await this.privateChatsRepository.findById(chatIdUEID)
@@ -50,6 +53,16 @@ export class ChatMessagesService {
         senderId !== privateChat.user1Id.toString() &&
         senderId !== privateChat.user2Id.toString()
       ) {
+        throw new NotAllowedError()
+      }
+    } else if (isGroupChat) {
+      const groupChat = await this.groupChatsRepository.findById(chatIdUEID)
+
+      if (!groupChat) {
+        throw new ResourceNotFoundError('Group Chat')
+      }
+
+      if (!groupChat.members.find((member) => member.toString() === senderId)) {
         throw new NotAllowedError()
       }
     }
@@ -85,7 +98,10 @@ export class ChatMessagesService {
       throw new ResourceNotFoundError('Usuário')
     }
 
-    if (chatType === ChatType.PRIVATE) {
+    const isPrivateChat = chatType === ChatType.PRIVATE
+    const isGroupChat = chatType === ChatType.GROUP
+
+    if (isPrivateChat) {
       const privateChat = await this.privateChatsRepository.findById(chatIdUEID)
 
       if (!privateChat) {
@@ -95,6 +111,20 @@ export class ChatMessagesService {
       if (
         whoRequestingId !== privateChat.user1Id.toString() &&
         whoRequestingId !== privateChat.user2Id.toString()
+      ) {
+        throw new NotAllowedError()
+      }
+    } else if (isGroupChat) {
+      const groupChat = await this.groupChatsRepository.findById(chatIdUEID)
+
+      if (!groupChat) {
+        throw new ResourceNotFoundError('Group Chat')
+      }
+
+      if (
+        !groupChat.members.find(
+          (member) => member.toString() === whoRequestingId,
+        )
       ) {
         throw new NotAllowedError()
       }

@@ -5,10 +5,12 @@ import { makePrivateChat } from 'test/factories/make-private-chat'
 import { makeUser } from 'test/factories/make-user'
 import { InMemoryChatMessagesRepository } from 'test/repositories/in-memory-chat-messages-repository'
 import { ChatMessagesService } from '../chat-messages.service'
+import { InMemoryGroupChatsRepository } from 'test/repositories/in-memory-group-chats-repository'
 
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository
+let inMemoryGroupChatsRepository: InMemoryGroupChatsRepository
 
 let chatMessagesService: ChatMessagesService
 let privateChatsService: PrivateChatsService
@@ -18,11 +20,13 @@ describe('Fetch Private Chats by User Id Service', () => {
     inMemoryChatMessagesRepository = new InMemoryChatMessagesRepository()
     inMemoryUsersRepository = new InMemoryUsersRepository()
     inMemoryPrivateChatsRepository = new InMemoryPrivateChatsRepository()
+    inMemoryGroupChatsRepository = new InMemoryGroupChatsRepository()
 
     chatMessagesService = new ChatMessagesService(
       inMemoryChatMessagesRepository,
       inMemoryPrivateChatsRepository,
       inMemoryUsersRepository,
+      inMemoryGroupChatsRepository,
     )
 
     privateChatsService = new PrivateChatsService(

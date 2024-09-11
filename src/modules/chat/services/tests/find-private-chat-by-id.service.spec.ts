@@ -7,10 +7,12 @@ import { makeUser } from 'test/factories/make-user'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
 import { InMemoryChatMessagesRepository } from 'test/repositories/in-memory-chat-messages-repository'
 import { ChatMessagesService } from '../chat-messages.service'
+import { InMemoryGroupChatsRepository } from 'test/repositories/in-memory-group-chats-repository'
 
 let inMemoryChatMessagesRepository: InMemoryChatMessagesRepository
 let inMemoryUsersRepository: InMemoryUsersRepository
 let inMemoryPrivateChatsRepository: InMemoryPrivateChatsRepository
+let inMemoryGroupChatsRepository: InMemoryGroupChatsRepository
 
 let chatMessagesService: ChatMessagesService
 let privateChatsService: PrivateChatsService
@@ -20,11 +22,13 @@ describe('Find Private Chat by Id Service', () => {
     inMemoryChatMessagesRepository = new InMemoryChatMessagesRepository()
     inMemoryUsersRepository = new InMemoryUsersRepository()
     inMemoryPrivateChatsRepository = new InMemoryPrivateChatsRepository()
+    inMemoryGroupChatsRepository = new InMemoryGroupChatsRepository()
 
     chatMessagesService = new ChatMessagesService(
       inMemoryChatMessagesRepository,
       inMemoryPrivateChatsRepository,
       inMemoryUsersRepository,
+      inMemoryGroupChatsRepository,
     )
 
     privateChatsService = new PrivateChatsService(
