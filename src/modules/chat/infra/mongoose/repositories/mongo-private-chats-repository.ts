@@ -1,4 +1,4 @@
-import { FetchPrivateChatsByUserIdRepositoryDto } from '@/modules/chat/dtos/fetch-private-chats-by-user-id-service.dto'
+import { FetchPrivateChatsByUserIdRepositoryDto } from '@/modules/chat/dtos/fetch-private-chats-by-user-id-service.dto copy'
 import { PrivateChat } from '@/modules/chat/infra/mongoose/schemas/private-chat'
 import {
   FindByUsersIdProps,

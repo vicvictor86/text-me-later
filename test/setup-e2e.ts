@@ -23,6 +23,10 @@ beforeAll(async () => {
 
   const mongooseConnection = await mongoose.connect(process.env.MONGO_URI_TEST)
 
+  if (!mongooseConnection.connection.db) {
+    throw new Error('Error connecting to database')
+  }
+
   const collections = await mongooseConnection.connection.db
     .listCollections()
     .toArray()

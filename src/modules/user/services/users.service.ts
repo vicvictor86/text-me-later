@@ -43,7 +43,7 @@ export class UsersService {
     await this.usersRepository.create(createUser)
   }
 
-  async findByUsername(username: string): Promise<{ user: User } | null> {
+  async findByUsername(username: string): Promise<{ user: User }> {
     const user = await this.usersRepository.findByUsername(username)
 
     if (!user) {

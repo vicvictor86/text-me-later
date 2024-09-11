@@ -4,5 +4,5 @@ export class CreatePrivateChatResponseDto {
   chatId: string
   title: string
   createdAt: Date
-  updatedAt: Date
+  updatedAt?: Date
 }

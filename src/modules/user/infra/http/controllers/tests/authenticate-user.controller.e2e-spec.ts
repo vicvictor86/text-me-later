@@ -42,6 +42,11 @@ describe('Authenticate User (e2e)', () => {
       })
 
     const user = await mongoUsersRepository.findByUsername(username)
+
+    if (!user) {
+      throw new Error('User not found')
+    }
+
     user.accountStatus = AccountStatus.ACTIVE
     await mongoUsersRepository.save(user)
 

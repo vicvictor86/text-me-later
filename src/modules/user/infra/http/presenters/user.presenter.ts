@@ -14,7 +14,7 @@ export class UserPresenter {
       pronoun: user.pronoun,
       accountStatus: user.accountStatus,
       createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
+      updatedAt: user.updatedAt?.toISOString(),
     }
   }
 }

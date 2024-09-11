@@ -2,7 +2,7 @@ export type SendEmailMessageProps = {
   to: string
   subject: string
   message: string
-  html?: string
+  html?: string | null
 }
 
 export abstract class EmailProvider {

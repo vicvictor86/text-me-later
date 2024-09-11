@@ -21,7 +21,7 @@ export class GroupChat {
   name: string
 
   @Prop()
-  description: string
+  description?: string
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   members: Types.ObjectId[]

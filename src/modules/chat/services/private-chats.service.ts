@@ -7,11 +7,11 @@ import { NotAllowedError } from '@/shared/errors/not-allowed-error'
 import { ChatAlreadyExistsError } from '../errors/chat-already-exists-error'
 import { Injectable } from '@nestjs/common'
 import { FindPrivateChatByIdServiceDto } from '../dtos/find-private-chat-by-id.dto'
-import { FetchPrivateChatsByUserIdServiceDto } from '../dtos/fetch-private-chats-by-user-id-service.dto'
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
 import { ChatMessagesService } from './chat-messages.service'
 import { ChatType } from '../infra/mongoose/schemas/chat-message'
 import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
+import { FetchPrivateChatsByUserIdServiceDto } from '../dtos/fetch-private-chats-by-user-id-service.dto copy'
 
 @Injectable()
 export class PrivateChatsService {
@@ -72,7 +72,6 @@ export class PrivateChatsService {
       chatType: ChatType.PRIVATE,
       senderId: whoRequestingId,
       text,
-      whoRequestingId,
     })
 
     return privateChat

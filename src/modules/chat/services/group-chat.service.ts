@@ -1,98 +1,86 @@
 import { UsersRepository } from '@/modules/user/repositories/users-repository'
 import { ResourceNotFoundError } from '@/shared/errors/resource-not-found-error'
 import { NotAllowedError } from '@/shared/errors/not-allowed-error'
-import { ChatAlreadyExistsError } from '../errors/chat-already-exists-error'
 import { Injectable } from '@nestjs/common'
 import { PaginationResult } from '@/shared/database/repositories/pagination-params'
-import { ChatMessagesService } from './chat-messages.service'
-import { ChatType } from '../infra/mongoose/schemas/chat-message'
-import { makeObjectId } from '@/shared/database/repositories/object-id'
 import { GroupChatsRepository } from '../repositories/group-chats-repository'
+import { CreateGroupChatDto } from '../dtos/create-group-chat.dto'
+import { GroupChat } from '../infra/mongoose/schemas/group-chat'
+import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
+import { FindGroupChatByIdDto } from '../dtos/find-group-chat-by-id.dto'
+import { FetchGroupChatsByUserIdDto } from '../dtos/fetch-group-chats-by-user-id.dto'
 
 @Injectable()
 export class GroupChatsService {
   constructor(
     private groupChatsRepository: GroupChatsRepository,
     private usersRepository: UsersRepository,
-    private chatMessagesService: ChatMessagesService,
   ) {}
 
   async create({
     whoRequestingId,
-    otherUserId,
-    text,
+    members,
+    name,
+    description,
   }: CreateGroupChatDto): Promise<GroupChat> {
-    const userRequesting = await this.usersRepository.findById(whoRequestingId)
+    const whoRequestingIdUEID = new UniqueEntityId(whoRequestingId)
+
+    const userRequesting =
+      await this.usersRepository.findById(whoRequestingIdUEID)
 
     if (!userRequesting) {
       throw new ResourceNotFoundError('Usuário')
     }
 
-    const groupChatWithUsersAlreadyExists =
-      await this.groupChatsRepository.findByUsersId({
-        user1Id: whoRequestingId,
-        user2Id: otherUserId,
-      })
+    const membersUEID = members.map((memberId) => new UniqueEntityId(memberId))
+    const membersObjectId = membersUEID.map((memberUEID) =>
+      memberUEID.toObjectId(),
+    )
 
-    if (groupChatWithUsersAlreadyExists) {
-      throw new ChatAlreadyExistsError()
-    }
+    const allMembersExistsPromise = membersUEID.map(async (memberUEID) => {
+      const member = await this.usersRepository.findById(memberUEID)
 
-    const user1 = await this.usersRepository.findById(whoRequestingId)
+      if (!member) {
+        throw new ResourceNotFoundError('Usuário')
+      }
+    })
 
-    if (!user1) {
-      throw new ResourceNotFoundError('Usuário')
-    }
+    await Promise.all(allMembersExistsPromise)
 
-    const user2 = await this.usersRepository.findById(otherUserId)
-
-    if (!user2) {
-      throw new ResourceNotFoundError('Usuário')
-    }
-
-    const whoRequestingIdObjectId = makeObjectId(whoRequestingId)
-    const otherUserIdObjectId = makeObjectId(otherUserId)
     const groupChat = await this.groupChatsRepository.create(
       new GroupChat({
-        user1Id: whoRequestingIdObjectId,
-        user2Id: otherUserIdObjectId,
-        titleUser1: user2.username,
-        titleUser2: user1.username,
+        name,
+        members: membersObjectId,
+        admins: [whoRequestingIdUEID.toObjectId()],
+        description,
       }),
     )
 
-    await this.chatMessagesService.create({
-      chatId: groupChat._id.toString(),
-      chatType: ChatType.PRIVATE,
-      senderId: whoRequestingId,
-      text,
-      whoRequestingId,
-    })
+    await this.groupChatsRepository.create(groupChat)
 
     return groupChat
   }
 
-  async findById({
-    whoRequestingId,
-    chatId,
-  }: FindGroupChatByIdServiceDto): Promise<{
+  async findById({ whoRequestingId, chatId }: FindGroupChatByIdDto): Promise<{
     groupChat: GroupChat
   }> {
-    const user = await this.usersRepository.findById(whoRequestingId)
+    const whoRequestingIdUEID = new UniqueEntityId(whoRequestingId)
+    const chatIdUEID = new UniqueEntityId(chatId)
+
+    const user = await this.usersRepository.findById(whoRequestingIdUEID)
 
     if (!user) {
       throw new ResourceNotFoundError('Usuário')
     }
 
-    const groupChat = await this.groupChatsRepository.findById(chatId)
+    const groupChat = await this.groupChatsRepository.findById(chatIdUEID)
 
     if (!groupChat) {
       throw new ResourceNotFoundError('Chat')
     }
 
     if (
-      whoRequestingId !== groupChat.user1Id.toString() &&
-      whoRequestingId !== groupChat.user2Id.toString()
+      !groupChat.members.find((member) => member.toString() === whoRequestingId)
     ) {
       throw new NotAllowedError()
     }
@@ -103,10 +91,11 @@ export class GroupChatsService {
   async fetchByUserId({
     paginationParams,
     userId,
-  }: FetchGroupChatsByUserIdServiceDto): Promise<{
+  }: FetchGroupChatsByUserIdDto): Promise<{
     groupChats: PaginationResult<GroupChat>
   }> {
-    const user = await this.usersRepository.findById(userId)
+    const userIdUEID = new UniqueEntityId(userId)
+    const user = await this.usersRepository.findById(userIdUEID)
 
     if (!user) {
       throw new ResourceNotFoundError('Usuário')
