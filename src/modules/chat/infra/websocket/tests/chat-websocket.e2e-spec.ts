@@ -21,11 +21,11 @@ import { User } from '@/modules/user/infra/mongoose/schemas/user'
 import { JwtService } from '@nestjs/jwt'
 import { CryptographyModule } from '@/shared/cryptography/infra/cryptography.module'
 import { UniqueEntityId } from '@/shared/database/repositories/unique-entity-id'
-import {
-  ForwardMessageBodySchema,
-  SendMessageBodySchema,
-} from '../chat-websocket.gateway'
+
 import { ChatMessageFactory } from 'test/factories/make-chat-message'
+import { SendMessageBodySchema } from '../validations/send-message'
+import { ForwardMessageBodySchema } from '../validations/forward-message'
+import { AnswerMessageBodySchema } from '../validations/answer-message'
 
 describe('Chat Web Socket Test (e2e)', () => {
   let app: INestApplication
@@ -211,6 +211,53 @@ describe('Chat Web Socket Test (e2e)', () => {
           text: 'Oi',
           senderId: user1._id,
           isForwarded: true,
+        }),
+      ]),
+    )
+  })
+
+  test('User answer a message to other user in a already existing chat', async () => {
+    const user2 = await userFactory.makeMongoUser()
+
+    const privateChat = await privateChatFactory.makeMongoPrivateChat({
+      user1Id: user1._id,
+      user2Id: user2._id,
+      titleUser1: user2.username,
+      titleUser2: user1.username,
+    })
+
+    const message = await chatMessageFactory.makeMongoChatMessage({
+      chatId: privateChat._id,
+      senderId: user2._id,
+      text: 'Oi',
+      chatType: ChatType.PRIVATE,
+    })
+
+    type Request = AnswerMessageBodySchema
+
+    await asyncWebsocketEmit<Request, WebSocketResponse>(
+      socket,
+      EventSubscriptions.AnswerMessage,
+      {
+        messageId: message._id.toString(),
+        chatType: ChatType.PRIVATE,
+        text: 'answer-message',
+      },
+    )
+
+    const chatMessagesOnDatabase = await chatMessagesRepository.fetchByChatId({
+      chatId: privateChat._id.toString(),
+      paginationParams: { pageIndex: 0, perPage: 10 },
+    })
+
+    expect(chatMessagesOnDatabase).toBeDefined()
+    expect(chatMessagesOnDatabase.payload).toHaveLength(2)
+    expect(chatMessagesOnDatabase.payload).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          text: 'answer-message',
+          senderId: user1._id,
+          answeringTo: message._id,
         }),
       ]),
     )

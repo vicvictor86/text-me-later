@@ -5,5 +5,6 @@ export class CreateChatMessageDto {
   chatId: string
   text: string
   isForwarded?: boolean
+  answeringTo?: string
   chatType: ChatType
 }

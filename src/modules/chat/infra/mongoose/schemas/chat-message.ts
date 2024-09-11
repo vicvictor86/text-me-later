@@ -15,6 +15,7 @@ export class ChatMessage {
     this._id = chatMessage._id ?? new Types.ObjectId()
     this.chatId = chatMessage.chatId
     this.senderId = chatMessage.senderId
+    this.answeringTo = chatMessage.answeringTo
     this.text = chatMessage.text
     this.chatType = chatMessage.chatType
     this.isForwarded = chatMessage.isForwarded ?? false
@@ -28,6 +29,12 @@ export class ChatMessage {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   senderId: Types.ObjectId
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ChatMessage',
+  })
+  answeringTo?: Types.ObjectId
 
   @Prop()
   text: string
