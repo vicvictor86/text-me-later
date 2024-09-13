@@ -41,6 +41,7 @@ export class MongoPrivateChatsRepository implements PrivateChatsRepository {
       {
         titleUser1: privateChat.titleUser1,
         titleUser2: privateChat.titleUser2,
+        updatedAt: new Date(),
       },
     )
   }

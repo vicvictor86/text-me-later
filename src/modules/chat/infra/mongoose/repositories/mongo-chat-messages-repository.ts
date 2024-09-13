@@ -54,13 +54,7 @@ export class MongoChatMessagesRepository implements ChatMessagesRepository {
     await this.chatMessageModel.create(chatMessage)
   }
 
-  async save({
-    _id,
-    text,
-    readBy,
-    deletedBy,
-    updatedAt,
-  }: ChatMessage): Promise<void> {
+  async save({ _id, text, readBy, deletedBy }: ChatMessage): Promise<void> {
     await this.chatMessageModel.updateOne(
       {
         _id,
@@ -69,7 +63,7 @@ export class MongoChatMessagesRepository implements ChatMessagesRepository {
         text,
         readBy,
         deletedBy,
-        updatedAt,
+        updatedAt: new Date(),
       },
     )
   }

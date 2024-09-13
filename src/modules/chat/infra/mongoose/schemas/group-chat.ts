@@ -23,10 +23,10 @@ export class GroupChat {
   @Prop()
   description?: string
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'User', required: true })
   members: Types.ObjectId[]
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'User', required: true })
   admins: Types.ObjectId[]
 
   @Prop({ type: Date, default: Date.now })

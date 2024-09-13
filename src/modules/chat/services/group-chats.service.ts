@@ -19,7 +19,7 @@ export class GroupChatsService {
 
   async create({
     whoRequestingId,
-    members,
+    membersId,
     name,
     description,
   }: CreateGroupChatDto): Promise<GroupChat> {
@@ -32,15 +32,17 @@ export class GroupChatsService {
       throw new ResourceNotFoundError('Usuário')
     }
 
-    const whoRequestingIsAMemberGroup = members.find(
-      (member) => member === whoRequestingId,
+    const whoRequestingIsAMemberGroup = membersId.find(
+      (memberId) => memberId === whoRequestingId,
     )
 
     if (!whoRequestingIsAMemberGroup) {
-      members.push(whoRequestingId)
+      membersId.push(whoRequestingId)
     }
 
-    const membersUEID = members.map((memberId) => new UniqueEntityId(memberId))
+    const membersUEID = membersId.map(
+      (memberId) => new UniqueEntityId(memberId),
+    )
     const membersObjectId = membersUEID.map((memberUEID) =>
       memberUEID.toObjectId(),
     )

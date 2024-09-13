@@ -1,6 +1,6 @@
 export class CreateGroupChatDto {
   whoRequestingId: string
-  members: string[]
+  membersId: string[]
   name: string
   description?: string
 }

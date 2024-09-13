@@ -3,4 +3,5 @@ export enum EventSubscriptions {
   SendMessage = 'sendMessage',
   ForwardMessage = 'forwardMessage',
   AnswerMessage = 'answerMessage',
+  CreateGroupChat = 'createGroupChat',
 }

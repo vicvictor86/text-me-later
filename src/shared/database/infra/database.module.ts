@@ -15,6 +15,12 @@ import { MongoUsersRepository } from '@/modules/user/infra/mongoose/repositories
 import { UsersRepository } from '@/modules/user/repositories/users-repository'
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
+import {
+  GroupChat,
+  GroupChatSchema,
+} from '@/modules/chat/infra/mongoose/schemas/group-chat'
+import { GroupChatsRepository } from '@/modules/chat/repositories/group-chats-repository'
+import { MongoGroupChatsRepository } from '@/modules/chat/infra/mongoose/repositories/mongo-group-chats-repository'
 
 @Module({
   imports: [
@@ -31,6 +37,10 @@ import { MongooseModule } from '@nestjs/mongoose'
         name: PrivateChat.name,
         schema: PrivateChatSchema,
       },
+      {
+        name: GroupChat.name,
+        schema: GroupChatSchema,
+      },
     ]),
   ],
   providers: [
@@ -46,12 +56,17 @@ import { MongooseModule } from '@nestjs/mongoose'
       provide: PrivateChatsRepository,
       useClass: MongoPrivateChatsRepository,
     },
+    {
+      provide: GroupChatsRepository,
+      useClass: MongoGroupChatsRepository,
+    },
   ],
   exports: [
     MongooseModule,
     UsersRepository,
     ChatMessagesRepository,
     PrivateChatsRepository,
+    GroupChatsRepository,
   ],
 })
 export class DatabaseModule {}

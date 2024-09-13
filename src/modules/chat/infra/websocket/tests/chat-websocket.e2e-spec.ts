@@ -26,6 +26,9 @@ import { ChatMessageFactory } from 'test/factories/make-chat-message'
 import { SendMessageBodySchema } from '../validations/send-message'
 import { ForwardMessageBodySchema } from '../validations/forward-message'
 import { AnswerMessageBodySchema } from '../validations/answer-message'
+import { CreateGroupChatDto } from '@/modules/chat/dtos/create-group-chat.dto'
+import { CreateGroupChatResponseDto } from '@/modules/chat/dtos/create-group-chat-response.dto'
+import { GroupChatsRepository } from '@/modules/chat/repositories/group-chats-repository'
 
 describe('Chat Web Socket Test (e2e)', () => {
   let app: INestApplication
@@ -35,6 +38,7 @@ describe('Chat Web Socket Test (e2e)', () => {
   let userFactory: UserFactory
   let privateChatFactory: PrivateChatFactory
   let chatMessageFactory: ChatMessageFactory
+  let groupChatsRepository: GroupChatsRepository
 
   let jwt: JwtService
 
@@ -63,6 +67,7 @@ describe('Chat Web Socket Test (e2e)', () => {
     userFactory = moduleRef.get(UserFactory)
     privateChatFactory = moduleRef.get(PrivateChatFactory)
     chatMessageFactory = moduleRef.get(ChatMessageFactory)
+    groupChatsRepository = moduleRef.get(GroupChatsRepository)
 
     jwt = moduleRef.get(JwtService)
 
@@ -100,10 +105,6 @@ describe('Chat Web Socket Test (e2e)', () => {
         text: 'Oi',
       },
     )
-
-    if (privateChatResponse.status === 'error') {
-      console.log(privateChatResponse.data)
-    }
 
     expect(privateChatResponse.status).toEqual('success')
 
@@ -260,6 +261,66 @@ describe('Chat Web Socket Test (e2e)', () => {
           answeringTo: message._id,
         }),
       ]),
+    )
+  })
+
+  test('User create a group chat', async () => {
+    const user2 = await userFactory.makeMongoUser()
+
+    type Request = Omit<CreateGroupChatDto, 'whoRequestingId'>
+    type Response = WebSocketResponse<CreateGroupChatResponseDto>
+
+    const groupChatResponse = await asyncWebsocketEmit<Request, Response>(
+      socket,
+      EventSubscriptions.CreateGroupChat,
+      {
+        membersId: [user2._id.toString()],
+        name: 'Group Chat',
+        description: 'Group Chat Description',
+      },
+    )
+
+    expect(groupChatResponse.status).toEqual('success')
+
+    const groupChatOnDatabase = await groupChatsRepository.fetchByUserId({
+      paginationParams: { pageIndex: 0, perPage: 10 },
+      userId: user1._id.toString(),
+    })
+
+    expect(groupChatOnDatabase).toBeTruthy()
+
+    if (!groupChatOnDatabase) {
+      throw new Error('Private chat not found')
+    }
+
+    if (!groupChatResponse.data) {
+      throw new Error('Private chat response not found')
+    }
+
+    expect(groupChatOnDatabase.meta.totalCount).toEqual(1)
+    expect(groupChatOnDatabase.payload).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'Group Chat',
+          description: 'Group Chat Description',
+          members: expect.arrayContaining([user1._id, user2._id]),
+          admins: expect.arrayContaining([user1._id]),
+        }),
+      ]),
+    )
+
+    expect(groupChatResponse).toBeDefined()
+    expect(groupChatResponse.status).toEqual('success')
+    expect(groupChatResponse.data).toEqual(
+      expect.objectContaining({
+        name: 'Group Chat',
+        description: 'Group Chat Description',
+        membersId: expect.arrayContaining([
+          user1._id.toString(),
+          user2._id.toString(),
+        ]),
+        adminsId: expect.arrayContaining([user1._id.toString()]),
+      }),
     )
   })
 })
